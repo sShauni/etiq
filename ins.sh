@@ -1,0 +1,5 @@
+
+
+sudo apt install python3 python3-tk
+echo "
+Dependências instaladas..."
