@@ -38,7 +38,7 @@ botoes_visiveis = [
     True, True, True, True
 ]
 
-fios = ["1,24mm", "1,60mm", "1.90mm", "2.30mm", "2.76mm"]
+fios = ["1,24mm", "1,60mm", "1.90mm", "2.30mm", "2.76mm", "2.10mm"]
 malhas = ["5x10cm", "6,5x15cm", "5x15cm", "2,5x2,5cm", "5x5cm", "5x7,5cm"]
 
 fios_visiveis = [True] * len(fios)
