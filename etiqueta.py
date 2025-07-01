@@ -10,7 +10,7 @@ import time
 try:
     import RPi.GPIO as GPIO
     GPIO.setmode(GPIO.BCM)
-    PINO_SINAL = 17  # você pode alterar o número do pino aqui
+    PINO_SINAL = 6  # você pode alterar o número do pino aqui
     GPIO.setup(PINO_SINAL, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
     gpio_disponivel = True
 except (ImportError, RuntimeError):
@@ -21,7 +21,7 @@ MODO_TESTE = True
 NOME_IMPRESSORA = "Thermal"
 PASTA_ETIQUETAS = os.path.join(os.path.dirname(__file__), "etiquetas")
 EXTENSAO_ARQUIVO = ".pdf"
-DELAY_IMPRESSAO_GPIO = 0.5  # segundos de debounce/delay
+DELAY_IMPRESSAO_GPIO = 1  # segundos de debounce/delay
 # ====================
 
 alturas_exibidas = [
@@ -42,7 +42,20 @@ fios = ["1,24mm", "1,60mm", "1.90mm", "2.30mm", "2.76mm"]
 malhas = ["5x10cm", "6,5x15cm", "5x15cm", "2,5x2,5cm", "5x5cm", "5x7,5cm"]
 
 fios_visiveis = [True] * len(fios)
+#fios_visiveis[0] = False
+#fios_visiveis[1] = False
+#fios_visiveis[2] = False
+#fios_visiveis[3] = False
+#fios_visiveis[4] = False
+#fios_visiveis[5] = False
+
 malhas_visiveis = [True] * len(malhas)
+#malhas_visiveis[0] = False
+#malhas_visiveis[1] = False
+#malhas_visiveis[2] = False
+#malhas_visiveis[3] = False
+#malhas_visiveis[4] = False
+#malhas_visiveis[5] = False
 
 combinacoes_validas = [
     (0, 0), (0, 1), (0, 2), (1, 0), (2, 0), (1, 1),
