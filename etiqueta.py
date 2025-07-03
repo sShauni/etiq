@@ -187,11 +187,12 @@ def imprimir_etiqueta():
 
     nomes = "\n".join(n for n, _ in arquivos_impressao)
 
-    # Caixa de sucesso temporária
+    # Caixa de sucesso temporária usando widget Toplevel com temporizador
     sucesso_popup = tk.Toplevel(janela)
     sucesso_popup.title("Sucesso")
     sucesso_popup.geometry("300x150+500+300")
     sucesso_popup.configure(bg="white")
+    sucesso_popup.attributes("-topmost", True)
     tk.Label(sucesso_popup, text=f"Etiqueta(s) {'selecionadas' if MODO_TESTE else 'impressas'}:",
              font=("Arial", 11), bg="white").pack(pady=(20, 5))
     tk.Label(sucesso_popup, text=nomes, font=("Arial", 10), bg="white").pack()
@@ -208,9 +209,6 @@ def registrar_log(valor):
             log.write(f"[{data}] Código: {valor:.1f} | Alturas: {alturas_str} | Fio: {fio_str} | Malha: {malha_str}\n")
     except Exception as e:
         print(f"Erro ao registrar log: {e}")
-
-# === RESTANTE DO CÓDIGO MANTIDO ===
-
 
 # === INTERFACE ===
 janela = tk.Tk()
@@ -250,14 +248,21 @@ def criar_coluna_altura():
 def criar_coluna(titulo, opcoes, grupo, visiveis):
     coluna = tk.Frame(frame, bg="white")
     tk.Label(coluna, text=titulo, font=("Arial", 10, "bold"), bg="lightgreen", width=14).pack()
+
     botoes = []
+
     for idx, opcao in enumerate(opcoes):
         if not visiveis[idx]:
             continue
-        b = tk.Button(coluna, text=opcao, width=12, height=2, font=("Arial", 10), bg="lightgray",
-                      command=lambda i=idx: selecionar(grupo, i, botoes))
+        b = tk.Button(coluna, text=opcao, width=12, height=2, font=("Arial", 10), bg="lightgray")
+
+        def make_callback(i=idx, botao=b):
+            return lambda: selecionar(grupo, i, botoes)
+
+        b.config(command=make_callback())
         b.pack(pady=2)
         botoes.append(b)
+
     coluna.pack(side=tk.LEFT, padx=5)
 
 criar_coluna_altura()
