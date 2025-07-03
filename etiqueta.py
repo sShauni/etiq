@@ -22,6 +22,7 @@ NOME_IMPRESSORA = "Thermal"
 PASTA_ETIQUETAS = os.path.join(os.path.dirname(__file__), "etiquetas")
 EXTENSAO_ARQUIVO = ".pdf"
 DELAY_IMPRESSAO_GPIO = 1  # segundos de debounce/delay
+TEMPO_SUCESSO_MSGBOX = 1000  # tempo em milissegundos para esconder a caixa de sucesso
 # ====================
 
 alturas_exibidas = [
@@ -185,7 +186,17 @@ def imprimir_etiqueta():
             return
 
     nomes = "\n".join(n for n, _ in arquivos_impressao)
-    messagebox.showinfo("Sucesso", f"Etiqueta(s) {'selecionadas' if MODO_TESTE else 'impressas'}:\n{nomes}")
+
+    # Caixa de sucesso temporária
+    sucesso_popup = tk.Toplevel(janela)
+    sucesso_popup.title("Sucesso")
+    sucesso_popup.geometry("300x150+500+300")
+    sucesso_popup.configure(bg="white")
+    tk.Label(sucesso_popup, text=f"Etiqueta(s) {'selecionadas' if MODO_TESTE else 'impressas'}:",
+             font=("Arial", 11), bg="white").pack(pady=(20, 5))
+    tk.Label(sucesso_popup, text=nomes, font=("Arial", 10), bg="white").pack()
+
+    sucesso_popup.after(TEMPO_SUCESSO_MSGBOX, sucesso_popup.destroy)
 
 def registrar_log(valor):
     try:
