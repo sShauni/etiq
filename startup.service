@@ -1,0 +1,17 @@
+[Unit]
+Description=Startup Etiqueta
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /home/pi/etiq/etiqueta.py
+WorkingDirectory=/home/pi/etiq
+StandardOutput=append:/home/pi/etiq/log.txt
+StandardError=append:/home/pi/etiq/log.txt
+User=pi
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/home/pi/.Xauthority
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+
+[Install]
+WantedBy=multi-user.target
