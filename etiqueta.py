@@ -22,7 +22,6 @@ NOME_IMPRESSORA = "Thermal"
 PASTA_ETIQUETAS = os.path.join(os.path.dirname(__file__), "etiquetas")
 EXTENSAO_ARQUIVO = ".pdf"
 DELAY_IMPRESSAO_GPIO = 1  # segundos de debounce/delay
-TEMPO_SUCESSO_MSGBOX = 1000  # tempo em milissegundos para esconder a caixa de sucesso
 # ====================
 
 alturas_exibidas = [
@@ -39,7 +38,7 @@ botoes_visiveis = [
     True, True,
     True, True,
     True, True,
-    False,False
+    True, True
 ]
 
 fios = ["1,24mm", "1,60mm", "1.90mm", "2.30mm", "2.76mm", "2.10mm"]
@@ -74,12 +73,6 @@ selecionados = {
     "altura": [],
     "fio": None,
     "malha": None
-}
-
-botoes_por_grupo = {
-    "fio":[],
-    "malha":[],
-    "altura":[]
 }
 
 def selecionar(grupo, idx, botoes, visual_indices=None):
@@ -195,18 +188,7 @@ def imprimir_etiqueta():
             return
 
     nomes = "\n".join(n for n, _ in arquivos_impressao)
-
-    # Caixa de sucesso temporária usando widget Toplevel com temporizador
-    sucesso_popup = tk.Toplevel(janela)
-    sucesso_popup.title("Sucesso")
-    sucesso_popup.geometry("300x150+500+300")
-    sucesso_popup.configure(bg="white")
-    sucesso_popup.attributes("-topmost", True)
-    tk.Label(sucesso_popup, text=f"Etiqueta(s) {'selecionadas' if MODO_TESTE else 'impressas'}:",
-             font=("Arial", 11), bg="white").pack(pady=(20, 5))
-    tk.Label(sucesso_popup, text=nomes, font=("Arial", 10), bg="white").pack()
-
-    sucesso_popup.after(TEMPO_SUCESSO_MSGBOX, sucesso_popup.destroy)
+    messagebox.showinfo("Sucesso", f"Etiqueta(s) {'selecionadas' if MODO_TESTE else 'impressas'}:\n{nomes}")
 
 def registrar_log(valor):
     try:
@@ -228,8 +210,6 @@ janela.bind("<Escape>", lambda e: janela.destroy())
 
 frame = tk.Frame(janela, bg="white")
 frame.pack(pady=10)
-
-
 
 def criar_coluna_altura():
     coluna = tk.Frame(frame, bg="white")
@@ -259,25 +239,27 @@ def criar_coluna_altura():
 def criar_coluna(titulo, opcoes, grupo, visiveis):
     coluna = tk.Frame(frame, bg="white")
     tk.Label(coluna, text=titulo, font=("Arial", 10, "bold"), bg="lightgreen", width=14).pack()
-
     botoes = []
-
     for idx, opcao in enumerate(opcoes):
         if not visiveis[idx]:
             continue
-
-        def comando(i=idx):
-            selecionar(grupo, i, botoes)
-            janela.update_idletasks()  # força atualização visual imediata
-
         b = tk.Button(coluna, text=opcao, width=12, height=2, font=("Arial", 10), bg="lightgray",
-                      command=comando)
-
+                      command=lambda i=idx: selecionar(grupo, i, botoes))
         b.pack(pady=2)
         botoes.append(b)
-
-    botoes_por_grupo[grupo] = botoes
     coluna.pack(side=tk.LEFT, padx=5)
+
+criar_coluna_altura()
+criar_coluna("Fio", fios, "fio", fios_visiveis)
+criar_coluna("Malha", malhas, "malha", malhas_visiveis)
+
+saida_var = tk.StringVar()
+saida_var.set("Faça suas seleções")
+tk.Label(janela, textvariable=saida_var, font=("Arial", 12), bg="white").pack(pady=5)
+
+tk.Button(janela, text="Imprimir etiqueta", command=imprimir_etiqueta,
+          bg="green", fg="white", font=("Arial", 12, "bold"),
+          width=20, height=2).pack(pady=8)
 
 # === THREAD GPIO (se disponível) ===
 def monitorar_gpio():
@@ -292,17 +274,5 @@ def monitorar_gpio():
 
 if gpio_disponivel:
     threading.Thread(target=monitorar_gpio, daemon=True).start()
-
-criar_coluna_altura()
-criar_coluna("Fio", fios, "fio", fios_visiveis)
-criar_coluna("Malha", malhas, "malha", malhas_visiveis)
-
-saida_var = tk.StringVar()
-saida_var.set("Faça suas seleções")
-tk.Label(janela, textvariable=saida_var, font=("Arial", 12), bg="white").pack(pady=5)
-
-tk.Button(janela, text="Imprimir etiqueta", command=imprimir_etiqueta,
-          bg="green", fg="white", font=("Arial", 12, "bold"),
-          width=20, height=2).pack(pady=8)
 
 janela.mainloop()
