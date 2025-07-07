@@ -8,6 +8,9 @@ import time
 import hashlib
 from openpyxl import Workbook, load_workbook
 
+LOG_DIR = os.path.join(os.path.dirname(__file__), "log")
+os.makedirs(LOG_DIR, exist_ok=True)
+
 def carregar_mapeamento_codigos(path):
     tabela = {}
     try:
@@ -21,35 +24,79 @@ def carregar_mapeamento_codigos(path):
         print(f"Erro ao carregar mapeamento: {e}")
     return tabela
 
-CAMINHO_MAPA_SKU = os.path.join(os.path.dirname(__file__), "RELAÇÃO CODIGO E SKU.xlsx")
+CAMINHO_MAPA_SKU = os.path.join(os.path.dirname(__file__), "SKU.xlsx")
 MAPA_SKU = carregar_mapeamento_codigos(CAMINHO_MAPA_SKU)
 
 def gerar_hash_selecao():
     dados = f"{selecionados['altura']}-{selecionados['fio']}-{selecionados['malha']}"
     return hashlib.md5(dados.encode()).hexdigest()
-    
+
 def registrar_log(valor, automatica=False):
+    data_hoje = datetime.now().strftime("%y%m%d")
+    selecao_hash = gerar_hash_selecao()
 
-LOG_DIR = os.path.join(os.path.dirname(__file__), "log")
-os.makedirs(LOG_DIR, exist_ok=True)
+    sku = MAPA_SKU.get(valor)
+    if not sku:
+        print(f"⚠️ Código {valor} não encontrado na planilha de SKUs.")
+        return
 
-# GPIO só será importado no Raspberry Pi
+    base_nome = os.path.join(LOG_DIR, data_hoje)
+    sufixo = ""
+    count = 1
+
+    while True:
+        caminho = f"{base_nome}{sufixo}.xlsx"
+        if not os.path.exists(caminho):
+            break
+        try:
+            wb = load_workbook(caminho)
+            ws = wb.active
+            hash_encontrado = ws['C1'].value
+            if hash_encontrado == selecao_hash:
+                break
+        except:
+            pass
+        count += 1
+        sufixo = f"-{count}"
+
+    caminho = f"{base_nome}{sufixo}.xlsx"
+
+    if os.path.exists(caminho):
+        wb = load_workbook(caminho)
+        ws = wb.active
+    else:
+        wb = Workbook()
+        ws = wb.active
+        ws.append(["SKU", "Quantidade"])
+        ws['C1'] = selecao_hash
+
+    encontrou = False
+    for row in range(2, ws.max_row + 1):
+        if ws.cell(row=row, column=1).value == sku:
+            atual = ws.cell(row=row, column=2).value or 0
+            ws.cell(row=row, column=2, value=atual + 1)
+            encontrou = True
+            break
+
+    if not encontrou:
+        ws.append([sku, 1])
+
+    wb.save(caminho)
+
 try:
     import RPi.GPIO as GPIO
     GPIO.setmode(GPIO.BCM)
-    PINO_SINAL = 6  # você pode alterar o número do pino aqui
+    PINO_SINAL = 6
     GPIO.setup(PINO_SINAL, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
     gpio_disponivel = True
 except (ImportError, RuntimeError):
     gpio_disponivel = False
 
-# === CONFIGURAÇÃO ===
 MODO_TESTE = True
 NOME_IMPRESSORA = "Thermal"
 PASTA_ETIQUETAS = os.path.join(os.path.dirname(__file__), "etiquetas")
 EXTENSAO_ARQUIVO = ".pdf"
-DELAY_IMPRESSAO_GPIO = 1  # segundos de debounce/delay
-# ====================
+DELAY_IMPRESSAO_GPIO = 1
 
 alturas_exibidas = [
     ("1,00m", 0), ("1,00m (2ª)", 0),
@@ -66,8 +113,9 @@ botoes_visiveis = [
     True, True,
     True, True,
     True, True
-]
 
+
+]
 fios = ["1,24mm", "1,60mm", "1.90mm", "2.30mm", "2.76mm", "2.10mm"]
 malhas = ["5x10cm", "6,5x15cm", "5x15cm", "2,5x2,5cm", "5x5cm", "5x7,5cm"]
 
@@ -92,15 +140,10 @@ combinacoes_validas = [
     (5, 5), (5, 0), (0, 5), (5, 1), (1, 5)
 ]
 
-# valores inteiros para primárias, fracionários para secundárias
 primario_valor = {0: 1.0, 1: 2.0, 2: 3.0, 3: 4.0, 4: 5.0, 5: 6.0}
 secundario_valor = {0: 0.1, 1: 0.2, 2: 0.3, 5: 0.4}
 
-selecionados = {
-    "altura": [],
-    "fio": None,
-    "malha": None
-}
+selecionados = {"altura": [], "fio": None, "malha": None}
 
 def selecionar(grupo, idx, botoes, visual_indices=None):
     if grupo == "altura":
@@ -111,67 +154,43 @@ def selecionar(grupo, idx, botoes, visual_indices=None):
         else:
             messagebox.showwarning("Erro", "Só é possível selecionar até duas alturas.")
             return
-
         for b in botoes:
             b.config(bg="lightgray")
-
-        for i, sel_idx in enumerate(selecionados["altura"]):
+        for sel_idx in selecionados["altura"]:
             if sel_idx in visual_indices:
                 vis_idx = visual_indices.index(sel_idx)
-                if vis_idx < len(botoes):
-                    botoes[vis_idx].config(bg="mediumpurple1")
+                botoes[vis_idx].config(bg="mediumpurple1")
     else:
         selecionados[grupo] = idx
         for i, b in enumerate(botoes):
             b.config(bg="mediumpurple1" if i == idx else "lightgray")
-
     atualizar_saida()
 
 def calcular_saida_personalizado(altura_idx):
     fio = selecionados["fio"]
     malha = selecionados["malha"]
-
     if fio is None or malha is None:
         return None
-
     base_idx = alturas_exibidas[altura_idx][1]
     alturas_com_base = [i for i in selecionados["altura"] if alturas_exibidas[i][1] == base_idx]
-
-    if len(alturas_com_base) == 2:
-        # Duas alturas iguais selecionadas, uma será primária, outra secundária
-        if altura_idx == alturas_com_base[0]:
-            altura_val = primario_valor.get(base_idx, 0)
-        else:
-            altura_val = secundario_valor.get(base_idx, primario_valor.get(base_idx, 0))
-    else:
-        altura_val = primario_valor.get(base_idx, 0)
-
-    valor = altura_val + 10 * (fio + 1) + 100 * (malha + 1)
-    return round(valor, 1)
+    altura_val = primario_valor.get(base_idx, 0) if len(alturas_com_base) == 1 or altura_idx == alturas_com_base[0] else secundario_valor.get(base_idx, primario_valor.get(base_idx, 0))
+    return round(altura_val + 10 * (fio + 1) + 100 * (malha + 1), 1)
 
 def calcular_saida():
     altura_sel = selecionados["altura"]
     fio = selecionados["fio"]
     malha = selecionados["malha"]
-
     if not altura_sel:
         return None, "Selecione ao menos uma altura"
-
     if len(altura_sel) == 2:
         base1 = alturas_exibidas[altura_sel[0]][1]
         base2 = alturas_exibidas[altura_sel[1]][1]
         if (base1, base2) not in combinacoes_validas:
             return None, "Combinação de alturas inválida"
-
     if fio is None or malha is None:
         return None, "Complete todas as seleções"
-
-    altura_val = sum(
-        calcular_saida_personalizado(i) - 10 * (fio + 1) - 100 * (malha + 1)
-        for i in altura_sel
-    )
-    valor = altura_val + 10 * (fio + 1) + 100 * (malha + 1)
-    return round(valor, 1), None
+    altura_val = sum(calcular_saida_personalizado(i) - 10 * (fio + 1) - 100 * (malha + 1) for i in altura_sel)
+    return round(altura_val + 10 * (fio + 1) + 100 * (malha + 1), 1), None
 
 def atualizar_saida():
     valor, erro = calcular_saida()
@@ -183,7 +202,6 @@ def imprimir_etiqueta(automatica=False):
         if not automatica:
             messagebox.showerror("Erro", "Selecione ao menos uma altura")
         return
-
     if len(altura_sel) == 2:
         base1 = alturas_exibidas[altura_sel[0]][1]
         base2 = alturas_exibidas[altura_sel[1]][1]
@@ -191,24 +209,19 @@ def imprimir_etiqueta(automatica=False):
             if not automatica:
                 messagebox.showerror("Erro", "Combinação de alturas inválida")
             return
-
     arquivos_impressao = []
-
     for idx in altura_sel:
         valor_individual = calcular_saida_personalizado(idx)
         if valor_individual is None:
             if not automatica:
                 messagebox.showerror("Erro", "Complete todas as seleções")
             return
-
         nome_arquivo = os.path.join(PASTA_ETIQUETAS, f"etiqueta_{valor_individual:.1f}{EXTENSAO_ARQUIVO}")
         if not os.path.exists(nome_arquivo):
             if not automatica:
                 messagebox.showerror("Erro", f"Arquivo não encontrado: {nome_arquivo}")
             return
-
         arquivos_impressao.append((nome_arquivo, valor_individual))
-
     for nome_arquivo, valor in arquivos_impressao:
         try:
             if not MODO_TESTE:
@@ -218,63 +231,10 @@ def imprimir_etiqueta(automatica=False):
             if not automatica:
                 messagebox.showerror("Erro", f"Falha ao imprimir: {e}")
             return
-
     if not automatica:
         nomes = "\n".join(n for n, _ in arquivos_impressao)
         messagebox.showinfo("Sucesso", f"Etiqueta(s) {'selecionadas' if MODO_TESTE else 'impressas'}:\n{nomes}")
 
-def registrar_log(valor, automatica=False):
-    data_hoje = datetime.now().strftime("%y%m%d")
-    selecao_hash = gerar_hash_selecao()
-    tipo = "Automática" if automatica else "Manual"
-
-    altura1 = alturas_exibidas[selecionados["altura"][0]][0] if len(selecionados["altura"]) > 0 else ""
-    altura2 = alturas_exibidas[selecionados["altura"][1]][0] if len(selecionados["altura"]) > 1 else ""
-    fio_str = fios[selecionados["fio"]] if selecionados["fio"] is not None else "-"
-    malha_str = malhas[selecionados["malha"]] if selecionados["malha"] is not None else "-"
-
-    base_nome = os.path.join(LOG_DIR, data_hoje)
-    sufixo = ""
-    count = 1
-
-    while True:
-        caminho = f"{base_nome}{sufixo}.xlsx"
-        if not os.path.exists(caminho):
-            break
-        try:
-            wb = load_workbook(caminho)
-            ws = wb.active
-            hash_encontrado = ws['H1'].value
-            if hash_encontrado == selecao_hash:
-                break
-        except:
-            pass
-        count += 1
-        sufixo = f"-{count}"
-
-    caminho = f"{base_nome}{sufixo}.xlsx"
-
-    if os.path.exists(caminho):
-        wb = load_workbook(caminho)
-        ws = wb.active
-    else:
-        wb = Workbook()
-        ws = wb.active
-        ws.append(["Código", "Altura 1", "Altura 2", "Fio", "Malha", "Tipo", "Quantidade"])
-        ws['H1'] = selecao_hash  # hash de verificação
-
-    ultima_linha = ws.max_row
-    if ultima_linha == 1:
-        # Primeira linha de dados
-        ws.append([valor, altura1, altura2, fio_str, malha_str, tipo, 1])
-    else:
-        # Incrementar contador
-        atual = ws.cell(row=ultima_linha, column=7).value or 0
-        ws.cell(row=ultima_linha, column=7, value=atual + 1)
-
-    wb.save(caminho)
-
-# === INTERFACE ===
 janela = tk.Tk()
 janela.title("Selecionador de Etiquetas")
 janela.attributes("-fullscreen", True)
@@ -287,26 +247,16 @@ frame.pack(pady=10)
 def criar_coluna_altura():
     coluna = tk.Frame(frame, bg="white")
     tk.Label(coluna, text="Altura(s)", font=("Arial", 10, "bold"), bg="lightgreen", width=20).grid(row=0, column=0, columnspan=2)
-    botoes = []
-    visual_indices = []
-    linha = 1
-    coluna_idx = 0
-
+    botoes, visual_indices, linha, coluna_idx = [], [], 1, 0
     for idx, (texto, _) in enumerate(alturas_exibidas):
-        if not botoes_visiveis[idx]:
-            continue
-        botao = tk.Button(
-            coluna, text=texto, width=12, height=2, font=("Arial", 10), bg="lightgray",
-            command=lambda real_idx=idx: selecionar("altura", real_idx, botoes, visual_indices)
-        )
+        if not botoes_visiveis[idx]: continue
+        botao = tk.Button(coluna, text=texto, width=12, height=2, font=("Arial", 10), bg="lightgray",
+                          command=lambda i=idx: selecionar("altura", i, botoes, visual_indices))
         botao.grid(row=linha, column=coluna_idx, padx=2, pady=2)
         botoes.append(botao)
         visual_indices.append(idx)
-
-        coluna_idx += 1
-        if coluna_idx >= 2:
-            coluna_idx = 0
-            linha += 1
+        coluna_idx = 0 if coluna_idx >= 1 else 1
+        if coluna_idx == 0: linha += 1
     coluna.pack(side=tk.LEFT, padx=5)
 
 def criar_coluna(titulo, opcoes, grupo, visiveis):
@@ -314,8 +264,7 @@ def criar_coluna(titulo, opcoes, grupo, visiveis):
     tk.Label(coluna, text=titulo, font=("Arial", 10, "bold"), bg="lightgreen", width=14).pack()
     botoes = []
     for idx, opcao in enumerate(opcoes):
-        if not visiveis[idx]:
-            continue
+        if not visiveis[idx]: continue
         b = tk.Button(coluna, text=opcao, width=12, height=2, font=("Arial", 10), bg="lightgray",
                       command=lambda i=idx: selecionar(grupo, i, botoes))
         b.pack(pady=2)
@@ -334,7 +283,6 @@ tk.Button(janela, text="Imprimir etiqueta", command=imprimir_etiqueta,
           bg="green", fg="white", font=("Arial", 12, "bold"),
           width=20, height=2).pack(pady=8)
 
-# === THREAD GPIO (se disponível) ===
 def monitorar_gpio():
     if not gpio_disponivel:
         return
@@ -343,7 +291,7 @@ def monitorar_gpio():
             janela.after(0, lambda: imprimir_etiqueta(automatica=True))
             time.sleep(DELAY_IMPRESSAO_GPIO)
             while GPIO.input(PINO_SINAL) == GPIO.HIGH:
-                time.sleep(0.05)  # espera desligar
+                time.sleep(0.05)
 
 if gpio_disponivel:
     threading.Thread(target=monitorar_gpio, daemon=True).start()
