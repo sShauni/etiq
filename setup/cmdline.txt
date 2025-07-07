@@ -1,0 +1,3 @@
+#/boot/cmdline.txt
+
+fbcon=map:1 fbcon=font:VGA8X8
