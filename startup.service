@@ -1,10 +1,10 @@
 [Unit]
-Description=Startup Etiqueta
+Description=Startup Etiqueta Programa
 After=multi-user.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/python3 /home/pi/etiq/etiqueta.py
+ExecStart=/usr/bin/python3 /home/pi/etiq/prog.py
 WorkingDirectory=/home/pi/etiq
 StandardOutput=append:/home/pi/etiq/log.txt
 StandardError=append:/home/pi/etiq/log.txt
