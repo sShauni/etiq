@@ -7,7 +7,7 @@ import threading
 import time
 import hashlib
 from openpyxl import Workbook, load_workbook
-#teste
+
 def carregar_mapeamento_codigos(path):
     tabela = {}
     try:
