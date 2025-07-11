@@ -1,0 +1,15 @@
+[Unit]
+Description=Montar pasta de logs da etiqueta via SMB
+After=network-online.target
+Wants=network-online.target
+Requires=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/home/pi/etiq/montar_logs.sh
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+
