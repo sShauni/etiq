@@ -8,7 +8,7 @@ import time
 import hashlib
 from openpyxl import Workbook, load_workbook
 
-LOG_DIR = os.path.join(os.path.dirname(__file__), "log")
+LOG_DIR = /mnt/logs
 os.makedirs(LOG_DIR, exist_ok=True)
 
 def carregar_mapeamento_codigos(path):
@@ -32,34 +32,15 @@ def gerar_hash_selecao():
     return hashlib.md5(dados.encode()).hexdigest()
 
 def registrar_log(valor, automatica=False):
+    nome_maq = "S06"
+    
     data_hoje = datetime.now().strftime("%y%m%d")
-    selecao_hash = gerar_hash_selecao()
+    caminho = os.path.join(LOG_DIR, f"{nome_maq}{data_hoje}.xlsx")
 
     sku = MAPA_SKU.get(valor)
     if not sku:
         print(f"⚠️ Código {valor} não encontrado na planilha de SKUs.")
         return
-
-    base_nome = os.path.join(LOG_DIR, data_hoje)
-    sufixo = ""
-    count = 1
-
-    while True:
-        caminho = f"{base_nome}{sufixo}.xlsx"
-        if not os.path.exists(caminho):
-            break
-        try:
-            wb = load_workbook(caminho)
-            ws = wb.active
-            hash_encontrado = ws['C1'].value
-            if hash_encontrado == selecao_hash:
-                break
-        except:
-            pass
-        count += 1
-        sufixo = f"-{count}"
-
-    caminho = f"{base_nome}{sufixo}.xlsx"
 
     if os.path.exists(caminho):
         wb = load_workbook(caminho)
@@ -68,7 +49,6 @@ def registrar_log(valor, automatica=False):
         wb = Workbook()
         ws = wb.active
         ws.append(["SKU", "Quantidade"])
-        ws['C1'] = selecao_hash
 
     encontrou = False
     for row in range(2, ws.max_row + 1):
