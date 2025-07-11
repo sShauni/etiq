@@ -8,7 +8,7 @@ import time
 import hashlib
 from openpyxl import Workbook, load_workbook
 
-LOG_DIR = /mnt/logs
+LOG_DIR = "/mnt/logs"
 os.makedirs(LOG_DIR, exist_ok=True)
 
 def carregar_mapeamento_codigos(path):
