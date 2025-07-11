@@ -32,10 +32,9 @@ def gerar_hash_selecao():
     return hashlib.md5(dados.encode()).hexdigest()
 
 def registrar_log(valor, automatica=False):
-    nome_maq = "S06"
-    
+    #nome_maq = "S06"
     data_hoje = datetime.now().strftime("%y%m%d")
-    caminho = os.path.join(LOG_DIR, f"{nome_maq}{data_hoje}.xlsx")
+    caminho = os.path.join(LOG_DIR, f"{data_hoje}.xlsx")
 
     sku = MAPA_SKU.get(valor)
     if not sku:
