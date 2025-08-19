@@ -32,9 +32,9 @@ def gerar_hash_selecao():
     return hashlib.md5(dados.encode()).hexdigest()
 
 def registrar_log(valor, automatica=False):
-    nome_maq = "S06"
+    #nome_maq = "S06"
     data_hoje = datetime.now().strftime("%y%m%d")
-    caminho = os.path.join(LOG_DIR, f"{nome_maq}{data_hoje}.xlsx")
+    caminho = os.path.join(LOG_DIR, f"{data_hoje}.xlsx")
 
     sku = MAPA_SKU.get(valor)
     if not sku:
@@ -66,7 +66,7 @@ try:
     import RPi.GPIO as GPIO
     GPIO.setmode(GPIO.BCM)
     PINO_SINAL = 6
-    GPIO.setup(PINO_SINAL, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(PINO_SINAL, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
     gpio_disponivel = True
 except (ImportError, RuntimeError):
     gpio_disponivel = False
@@ -266,14 +266,11 @@ def monitorar_gpio():
     if not gpio_disponivel:
         return
     while True:
-        if GPIO.input(PINO_SINAL) == GPIO.LOW:
+        if GPIO.input(PINO_SINAL) == GPIO.HIGH:
             janela.after(0, lambda: imprimir_etiqueta(automatica=True))
-            # espera até que o botão/contatora seja solto
-            while GPIO.input(PINO_SINAL) == GPIO.LOW:
+            time.sleep(DELAY_IMPRESSAO_GPIO)
+            while GPIO.input(PINO_SINAL) == GPIO.HIGH:
                 time.sleep(0.05)
-            time.sleep(DELAY_IMPRESSAO_GPIO)  # delay extra para debounce
-        else:
-            time.sleep(0.05)  # evita loop muito pesado
 
 if gpio_disponivel:
     threading.Thread(target=monitorar_gpio, daemon=True).start()

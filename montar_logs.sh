@@ -8,7 +8,7 @@ if mountpoint -q /mnt/logs; then
 fi
 
 echo "[>] Tentando montar..."
-mount -t cifs //192.168.0.250/Compumate/ArquivosProducao /mnt/logs \
+mount -t cifs //192.168.0.250/Compumate/Producao /mnt/logs \
   -o credentials=/etc/samba_credencial,iocharset=utf8,file_mode=0777,dir_mode=0777,noperm
 
 RET=$?

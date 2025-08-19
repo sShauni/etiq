@@ -1,6 +1,2 @@
-#/etc/samba_credencial.txt
-
 username=API
 password=25565
-
-#sudo chmod 600 /etc/smbcredencia.txt
