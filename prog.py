@@ -7,6 +7,7 @@ import threading
 import time
 import hashlib
 from openpyxl import Workbook, load_workbook
+import subprocess
 
 LOG_DIR = "/mnt/logs"
 os.makedirs(LOG_DIR, exist_ok=True)
@@ -76,6 +77,21 @@ NOME_IMPRESSORA = "Thermal"
 PASTA_ETIQUETAS = os.path.join(os.path.dirname(__file__), "etiquetas")
 EXTENSAO_ARQUIVO = ".pdf"
 DELAY_IMPRESSAO_GPIO = 1
+
+def ativar_impressora(nome_impressora):
+    """
+    Ativa a impressora no CUPS, caso esteja desativada.
+    """
+    try:
+        # Comando para ativar a impressora
+        subprocess.run(["cupsaccept", nome_impressora], check=True)
+        subprocess.run(["cupsenable", nome_impressora], check=True)
+        print(f"Impressora '{nome_impressora}' ativada com sucesso.")
+    except Exception as e:
+        print(f"Falha ao ativar a impressora '{nome_impressora}': {e}")
+
+# Chamar a função assim que o programa inicia
+ativar_impressora(NOME_IMPRESSORA)
 
 alturas_exibidas = [
     ("1,00m", 0), ("1,00m (2ª)", 0),
