@@ -66,7 +66,7 @@ def registrar_log(valor, automatica=False):
 try:
     import RPi.GPIO as GPIO
     GPIO.setmode(GPIO.BCM)
-    PINO_SINAL = 6
+    PINO_SINAL = 20
     GPIO.setup(PINO_SINAL, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     gpio_disponivel = True
 except (ImportError, RuntimeError):
