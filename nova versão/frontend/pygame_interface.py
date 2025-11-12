@@ -5,6 +5,15 @@ os.putenv('SDL_FBDEV', '/dev/fb1')
 os.putenv('SDL_VIDEODRIVER', 'fbcon')
 
 def iniciar_interface():
+    pygame.display.init()
+    pygame.font.init()
+    screen = pygame.display.set_mode((480, 320))
+
+    # --- TESTE DE VISUALIZAÇÃO ---
+    screen.fill((0, 0, 255))  # Azul forte
+    pygame.display.flip()
+    time.sleep(2)
+    
     pygame.init()
     screen = pygame.display.set_mode((480, 320))
     font = pygame.font.Font(None, 28)
