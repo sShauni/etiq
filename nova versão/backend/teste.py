@@ -1,0 +1,1 @@
+sudo SDL_FBDEV=/dev/fb1 python3 -c "import pygame; pygame.display.init(); print('Driver:', pygame.display.get_driver()); s=pygame.display.set_mode((480,320)); s.fill((255,0,0)); pygame.display.flip(); input('OK?')"
