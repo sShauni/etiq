@@ -19,7 +19,7 @@ def carregar_mapeamento_codigos(path):
         print(f"Erro ao carregar mapeamento: {e}")
     return tabela
 
-CAMINHO_MAPA_SKU = os.path.join(os.path.dirname(__file__), "..", "SKU.xlsx")
+CAMINHO_MAPA_SKU = os.path.join(os.path.dirname(__file__), "SKU.xlsx")
 MAPA_SKU = carregar_mapeamento_codigos(CAMINHO_MAPA_SKU)
 
 primario_valor = {0: 1.0, 1: 2.0, 2: 3.0, 3: 4.0, 4: 5.0, 5: 6.0}
