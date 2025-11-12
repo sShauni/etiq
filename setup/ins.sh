@@ -1,5 +1,5 @@
 sudo apt-get update
-sudo apt install python3 python3-tk cifs-utils
+sudo apt install python3 python3-tk cifs-utils xserver-xorg xinit
 sudo apt-get install python3-openpyxl
 sudo rm -rf LCD-show
 
