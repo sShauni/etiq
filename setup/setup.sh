@@ -18,6 +18,7 @@ sudo mount -t cifs //192.168.0.250/Compumate/Producao	-o username=API,passord=25
 git clone https://github.com/goodtft/LCD-show.git
 chmod -R 755 LCD-show
 
+sudo cp logo.png /usr/share/plymouth/themes/pix/splash.png
 pcmanfm --set-wallpaper="" --wallpaper-mode=color
 
 echo "
