@@ -1,6 +1,6 @@
 sudo apt-get update
-sudo apt install python3 python3-tk cifs-utils xserver-xorg xinit
-sudo apt-get install python3-openpyxl
+sudo apt install python3 python3-tk cifs-utils -y
+sudo apt-get install python3-openpyxl -y
 sudo rm -rf LCD-show
 
 sudo mv montar-logs.service /etc/systemd/system/
