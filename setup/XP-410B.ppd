@@ -3,13 +3,13 @@
 *FileVersion: "1.0"
 *LanguageVersion: English
 *LanguageEncoding: ISOLatin1
-*PCFileName: "XP-T201UD.ppd"
+*PCFileName: "XP-410B.ppd"
 *Manufacturer: "_XprinterAuto"
-*Product: "(XP-T201UD)"
-*ModelName: "XP-T201UD"
-*ShortNickName: "XP-T201UD"
-*NickName: "XP-T201UD"
-*1284DeviceID:"MFG:Xprinter;CMD:TSPL2;MDL:XP-T201UD;CLS:PRINTER;"
+*Product: "(XP-410B)"
+*ModelName: "XP-410B"
+*ShortNickName: "XP-410B"
+*NickName: "XP-410B"
+*1284DeviceID:"MFG:Xprinter;CMD:TSPL2;MDL:XP-410B;CLS:PRINTER;"
 *PSVersion: "(3010.000) 550"
 *PSVersion: "(3010.000) 651"
 *PSVersion: "(3010.000) 652"
@@ -32,14 +32,14 @@
 
 *TscAttr tscLanguage: TSPL2
 *TscAttr tscUtility: tscUtility
-*TscAttr MaxPaperWidth: 170.08
+*TscAttr MaxPaperWidth: 334.49
 
-*MaxMediaWidth: "170.08"
-*MaxMediaHeight: "850.39"
+*MaxMediaWidth: "306.14"
+*MaxMediaHeight: "6480"
 *HWMargins: 0.00 0.00 0.00 0.00
 *CustomPageSize True: "pop pop pop <</PageSize[5 -2 roll]/ImagingBBox null>>setpagedevice"
-*ParamCustomPageSize Width: 1 points 1 170.08
-*ParamCustomPageSize Height: 2 points 1 850.39
+*ParamCustomPageSize Width: 1 points 1 306.14
+*ParamCustomPageSize Height: 2 points 1 6480.0
 *ParamCustomPageSize WidthOffset: 3 points 0 0
 *ParamCustomPageSize HeightOffset: 4 points 0 0
 *ParamCustomPageSize Orientation: 5 int 0 0
@@ -48,6 +48,7 @@
 *OpenGroup: General/General
 
 *OpenUI *PageSize/Page Size: PickOne
+*OrderDependency: 10 AnySetup *PageSize
 *DefaultPageSize: w4h6
 *PageSize w2h4/2 x 4 (2.00 in x 4.00 in): "<</PageSize[144 288]/ImagingBBox null>>setpagedevice"
 *PageSize w4h4/4 x 4 (4.00 in x 4.00 in): "<</PageSize[288 288]/ImagingBBox null>>setpagedevice"
@@ -55,18 +56,19 @@
 *CloseUI: *PageSize
 
 *OpenUI *PageRegion/Page Size: PickOne
+*OrderDependency: 10 AnySetup *PageRegion
 *DefaultPageRegion: w4h6
 *PageRegion w2h4/2 x 4 (2.00 in x 4.00 in): "<</PageSize[144 288]/ImagingBBox null>>setpagedevice"
 *PageRegion w4h4/4 x 4 (4.00 in x 4.00 in): "<</PageSize[288 288]/ImagingBBox null>>setpagedevice"
 *PageRegion w4h6/4 x 6 (4.00 in x 6.00 in): "<</PageSize[288 432]/ImagingBBox null>>setpagedevice"
 *CloseUI: *PageRegion
 
-
 *ImageableArea w2h4/2 x 4 (2.00 in x 4.00 in): "0 0 144 288"
-*PaperDimension w2h4/2 x 4 (2.00 in x 4.00 in): "144 288"
 *ImageableArea w4h4/4 x 4 (4.00 in x 4.00 in): "0 0 288 288"
-*PaperDimension w4h4/4 x 4 (4.00 in x 4.00 in): "288 288"
 *ImageableArea w4h6/4 x 6 (4.00 in x 6.00 in): "0 0 288 432"
+
+*PaperDimension w2h4/2 x 4 (2.00 in x 4.00 in): "144 288"
+*PaperDimension w4h4/4 x 4 (4.00 in x 4.00 in): "288 288"
 *PaperDimension w4h6/4 x 6 (4.00 in x 6.00 in): "288 432"
 
 *% Collate already deprecated
@@ -190,16 +192,19 @@
 *OpenGroup: PrinterOptions/Printer Options
 
 *OpenUI *PrintSpeed/Print Speed: PickOne
-*DefaultPrintSpeed: 4
+*OrderDependency: 110 AnySetup *PrintSpeed
+*DefaultPrintSpeed: 6
 *PrintSpeed Normal/Use Currently Printer Setting: "%%"
 *PrintSpeed 2/50.8 mm/sec: "%%"
 *PrintSpeed 3/76.2 mm/sec: "%%"
 *PrintSpeed 4/101.6 mm/sec: "%%"
+*PrintSpeed 5/127 mm/sec: "%%"
+*PrintSpeed 6/152.4 mm/sec: "%%"
 *CloseUI: *PrintSpeed
 
 *OpenUI *Darkness/Darkness: PickOne
 *OrderDependency: 120 AnySetup *Darkness
-*DefaultDarkness: 7
+*DefaultDarkness: 8
 *Darkness 0: "%%"
 *Darkness 1: "%%"
 *Darkness 2: "%%"
@@ -217,6 +222,7 @@
 *Darkness 14: "%%"
 *Darkness 15: "%%"
 *CloseUI: *Darkness
+
 
 *CloseGroup: PrinterOptions
 
@@ -471,8 +477,6 @@
 *zh_TW.OptionDisplayUnit Inch/英寸: ""
 *zh_TW.OptionDisplayUnit MM/毫米: ""
 
-
-
 *% Generic boilerplate PPD stuff as standard PostScript fonts and so on
 
 *DefaultFont: Courier
@@ -511,4 +515,3 @@
 *Font Times-Roman: Standard "(001.007S)" Standard ROM
 *Font ZapfChancery-MediumItalic: Standard "(001.007S)" Standard ROM
 *Font ZapfDingbats: Special "(001.004S)" Standard ROM
-
