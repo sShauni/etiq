@@ -75,7 +75,7 @@ except (ImportError, RuntimeError):
 MODO_TESTE = True
 NOME_IMPRESSORA = "Thermal"
 PASTA_ETIQUETAS = os.path.join(os.path.dirname(__file__), "etiquetas")
-EXTENSAO_ARQUIVO = ".pdf"
+EXTENSAO_ARQUIVO = ".tspl"
 DELAY_IMPRESSAO_GPIO = 1
 
 def ativar_impressora(nome_impressora):
@@ -220,7 +220,7 @@ def imprimir_etiqueta(automatica=False):
     for nome_arquivo, valor in arquivos_impressao:
         try:
             if not MODO_TESTE:
-                subprocess.run(["lp", "-d", NOME_IMPRESSORA, nome_arquivo], check=True)
+                subprocess.run(["lp", "-d", NOME_IMPRESSORA, "-o", "raw", nome_arquivo], check=True)
             registrar_log(valor, automatica)
         except Exception as e:
             if not automatica:
