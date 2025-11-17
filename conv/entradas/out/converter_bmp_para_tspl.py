@@ -83,7 +83,7 @@ def processar():
             raw = img.tobytes()
 
             # **AQUI ESTÁ A INVERSÃO CORRETA**
-            raw_invertido = invert_binary(raw)
+            #raw_invertido = invert_binary(raw)
 
             tspl_bytes = bytearray()
             tspl_bytes.extend(b"CLS\n")
@@ -91,7 +91,7 @@ def processar():
             tspl_bytes.extend(f"GAP {GAP_MM} mm, 0 mm\n".encode())
             tspl_bytes.extend(b"CLS\n")
             tspl_bytes.extend(f"BITMAP 0,0,{bpl},{h},1,".encode())
-            tspl_bytes.extend(raw_invertido)
+            tspl_bytes.extend(raw)
             tspl_bytes.extend(b"\nPRINT 1\n")
 
             out_path = os.path.join(PASTA_SAIDA, f"{nome}.tspl")
