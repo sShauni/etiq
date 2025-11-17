@@ -10,8 +10,8 @@ PASTA_ENTRADA = "out"  # onde estão as .bmp
 PASTA_SAIDA = "tspl_out"       # onde salvar .tspl
 
 DPI = 203
-LARGURA_MM = 100   # largura da etiqueta (mm)
-ALTURA_MM = 75     # altura da etiqueta (mm)
+LARGURA_MM = 101.6   # largura da etiqueta (mm)
+ALTURA_MM = 76.2     # altura da etiqueta (mm)
 GAP_MM = 3         # gap entre etiquetas
 THRESHOLD = 128    # threshold pra converter pra 1-bit
 # ==============================
@@ -99,6 +99,7 @@ def processar():
             bytes_w = w // 8
 
             tspl = [
+                f"CSL",
                 f"SIZE {LARGURA_MM} mm, {ALTURA_MM} mm",
                 f"GAP {GAP_MM} mm, 0 mm",
                 "CLS",
