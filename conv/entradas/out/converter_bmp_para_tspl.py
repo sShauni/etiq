@@ -3,10 +3,10 @@ import traceback
 from PIL import Image
 
 # ==============================
-# CONFIGURAÇÕES
+# CONFIGURAÇÕES — EDITAR AQUI
 # ==============================
-PASTA_ENTRADA = "out"       # onde estão os .bmp
-PASTA_SAIDA = "tspl_out"    # onde salvar os .tspl
+PASTA_ENTRADA = "out"
+PASTA_SAIDA = "tspl_out"
 
 DPI = 203
 LARGURA_MM = 100
@@ -36,41 +36,18 @@ def pad_width(img):
     if w % 8 == 0:
         return img
     new_w = ((w + 7) // 8) * 8
-    new_img = Image.new("1", (new_w, h), 1)  # branco
+    new_img = Image.new("1", (new_w, h), 1)
     new_img.paste(img, (0, 0))
     return new_img
 
 
-def img_to_bytes(img):
-    """
-    Converte imagem 1-bit em bytes crus.
-    Pillow: 0 = preto, 255 = branco
-    TSPL modo 0 também usa 0 = preto.
-    Portanto, NÃO inverter bits.
-    """
-    w, h = img.size
-    pixels = img.load()
-    bytes_per_line = w // 8
-
-    raw = bytearray()
-
-    for y in range(h):
-        for bx in range(bytes_per_line):
-            val = 0
-            for bit in range(8):
-                x = bx * 8 + bit
-                pix = pixels[x, y]
-
-                if pix == 0:  # preto → bit 1
-                    val |= (1 << (7 - bit))
-
-            raw.append(val)
-
-    return raw, bytes_per_line, h
+def invert_binary(raw_bytes):
+    # Inverte 0 ↔ 1 em cada bit
+    return bytes([~b & 0xFF for b in raw_bytes])
 
 
 def processar():
-    print("[INÍCIO] Convertendo BMP → TSPL BINÁRIO")
+    print("[INÍCIO] Convertendo BMP -> TSPL BINÁRIO")
 
     ensure_dir(PASTA_SAIDA)
 
@@ -81,14 +58,13 @@ def processar():
         return
 
     if not arquivos:
-        print(f"[AVISO] Nenhum arquivo .bmp encontrado em '{PASTA_ENTRADA}'.")
+        print(f"[AVISO] Nenhum arquivo .bmp encontrado.")
         return
 
     target_w = mm_to_px(LARGURA_MM, DPI)
     target_h = mm_to_px(ALTURA_MM, DPI)
 
     total = 0
-
     for arq in arquivos:
         path = os.path.join(PASTA_ENTRADA, arq)
         nome = os.path.splitext(arq)[0]
@@ -96,37 +72,33 @@ def processar():
 
         try:
             img = Image.open(path)
-
-            # Resize para o tamanho exato da etiqueta
             img = img.resize((target_w, target_h), Image.LANCZOS)
-
-            # Converter para 1 bit
             img = convert_to_1bit(img, THRESHOLD)
-
-            # *** CRUCIAL ***
-            # BMP é invertido verticalmente → flip obrigatório
-            img = img.transpose(Image.FLIP_TOP_BOTTOM)
-
-            # Padding para múltiplos de 8
             img = pad_width(img)
 
-            # Converter para bytes crus
-            raw, bytes_w, h = img_to_bytes(img)
+            w, h = img.size
+            bpl = w // 8
 
-            # Criar TSPL (binário)
+            # RAW binário original
+            raw = img.tobytes()
+
+            # **AQUI ESTÁ A INVERSÃO CORRETA**
+            raw_invertido = invert_binary(raw)
+
+            tspl_bytes = bytearray()
+            tspl_bytes.extend(b"CLS\n")
+            tspl_bytes.extend(f"SIZE {LARGURA_MM} mm, {ALTURA_MM} mm\n".encode())
+            tspl_bytes.extend(f"GAP {GAP_MM} mm, 0 mm\n".encode())
+            tspl_bytes.extend(b"CLS\n")
+            tspl_bytes.extend(f"BITMAP 0,0,{bpl},{h},1,".encode())
+            tspl_bytes.extend(raw_invertido)
+            tspl_bytes.extend(b"\nPRINT 1\n")
+
             out_path = os.path.join(PASTA_SAIDA, f"{nome}.tspl")
-
             with open(out_path, "wb") as f:
-                f.write(b"CLS\n")
-                f.write(f"SIZE {LARGURA_MM} mm, {ALTURA_MM} mm\n".encode("ascii"))
-                f.write(f"GAP {GAP_MM} mm, 0 mm\n".encode("ascii"))
+                f.write(tspl_bytes)
 
-                # MODO 0 = bitmap cru
-                f.write(f"BITMAP 0,0,{bytes_w},{h},0,".encode("ascii"))
-                f.write(raw)
-                f.write(b"\nPRINT 1\n")
-
-            print(f"[OK] Gerado: {out_path}")
+            print(f"[OK] {out_path}")
             total += 1
 
         except Exception as e:
