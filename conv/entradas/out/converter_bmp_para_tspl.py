@@ -4,16 +4,16 @@ import traceback
 from PIL import Image
 
 # ==============================
-# CONFIGURAÇÕES — EDITAR AQUI
+# CONFIGURAÇÕES
 # ==============================
-PASTA_ENTRADA = "out"  # onde estão as .bmp
+PASTA_ENTRADA = "out"          # onde estão os .bmp
 PASTA_SAIDA = "tspl_out"       # onde salvar .tspl
 
 DPI = 203
-LARGURA_MM = 101.6   # largura da etiqueta (mm)
-ALTURA_MM = 76.2     # altura da etiqueta (mm)
-GAP_MM = 3         # gap entre etiquetas
-THRESHOLD = 128    # threshold pra converter pra 1-bit
+LARGURA_MM = 100   # largura etiqueta
+ALTURA_MM = 75     # altura etiqueta
+GAP_MM = 3
+THRESHOLD = 128
 # ==============================
 
 
@@ -37,19 +37,23 @@ def pad_width(img):
     if w % 8 == 0:
         return img
     new_w = ((w + 7) // 8) * 8
-    new_img = Image.new("1", (new_w, h), 1)  # branco
+    new_img = Image.new("1", (new_w, h), 1)
     new_img.paste(img, (0, 0))
     return new_img
 
 
-def img_to_tspl_hex(img):
+def img_to_bytes(img):
+    """
+    Converte imagem 1-bit em bytes crus (não hex!)
+    usado diretamente no BITMAP do TSPL.
+    """
     w, h = img.size
     pixels = img.load()
     bytes_per_line = w // 8
-    parts = []
+    
+    raw = bytearray()
 
     for y in range(h):
-        line_bytes = bytearray()
         for bx in range(bytes_per_line):
             val = 0
             for bit in range(8):
@@ -57,14 +61,13 @@ def img_to_tspl_hex(img):
                 pix = pixels[x, y]
                 if pix == 0:  # preto
                     val |= (1 << (7 - bit))
-            line_bytes.append(val)
-        parts.append(binascii.hexlify(bytes(line_bytes)).decode("ascii"))
+            raw.append(val)
 
-    return "".join(parts), w, h
+    return raw, bytes_per_line, h
 
 
 def processar():
-    print("[INÍCIO] Convertendo BMP -> TSPL")
+    print("[INÍCIO] Convertendo BMP -> TSPL (com saída binária)")
 
     ensure_dir(PASTA_SAIDA)
 
@@ -75,41 +78,42 @@ def processar():
         return
 
     if not arquivos:
-        print(f"[AVISO] Nenhum arquivo .bmp encontrado em '{PASTA_ENTRADA}'.")
+        print(f"[AVISO] Nenhum .bmp encontrado em '{PASTA_ENTRADA}'.")
         return
 
-    # dimensões alvo
     target_w = mm_to_px(LARGURA_MM, DPI)
     target_h = mm_to_px(ALTURA_MM, DPI)
 
     total = 0
 
     for arq in arquivos:
-        path = os.path.join(PASTA_ENTRADA, arq)
+        caminho = os.path.join(PASTA_ENTRADA, arq)
         nome = os.path.splitext(arq)[0]
+
         print(f"[INFO] Processando {arq}...")
 
         try:
-            img = Image.open(path)
+            img = Image.open(caminho)
             img = img.resize((target_w, target_h), Image.LANCZOS)
             img = convert_to_1bit(img, THRESHOLD)
             img = pad_width(img)
 
-            hex_data, w, h = img_to_tspl_hex(img)
-            bytes_w = w // 8
-
-            tspl = [
-                f"CSL",
-                f"SIZE {LARGURA_MM} mm, {ALTURA_MM} mm",
-                f"GAP {GAP_MM} mm, 0 mm",
-                "CLS",
-                f"BITMAP 0,0,{bytes_w},{h},1,{hex_data}",
-                "PRINT 1"
-            ]
+            raw_bytes, bytes_w, h = img_to_bytes(img)
 
             out_path = os.path.join(PASTA_SAIDA, f"{nome}.tspl")
-            with open(out_path, "w", encoding="utf-8") as f:
-                f.write("\n".join(tspl))
+
+            with open(out_path, "wb") as f:
+
+                header = (
+                    f"CLS\n"
+                    f"SIZE {LARGURA_MM} mm, {ALTURA_MM} mm\n"
+                    f"GAP {GAP_MM} mm, 0 mm\n"
+                    f"BITMAP 0,0,{bytes_w},{h},1,"
+                ).encode("ascii")
+
+                f.write(header)
+                f.write(raw_bytes)
+                f.write(b"\nPRINT 1\n")
 
             print(f"[OK] Gerado: {out_path}")
             total += 1
@@ -118,7 +122,8 @@ def processar():
             print(f"[ERRO] Falha ao processar {arq}: {e}")
             traceback.print_exc()
 
-    print(f"[FIM] {total} arquivos convertidos.")
+    print(f"[FIM] {total} arquivos convertidos.]")
+
 
 
 if __name__ == "__main__":
