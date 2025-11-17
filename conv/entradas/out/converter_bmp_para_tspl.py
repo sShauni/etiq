@@ -44,8 +44,8 @@ def pad_width(img):
 
 def img_to_bytes(img):
     """
-    Converte imagem 1-bit em bytes crus, invertendo o bit
-    para que 1 = preto e 0 = branco (modo esperado pelo TSPL).
+    Converte imagem 1-bit em bytes crus (não hex!)
+    usado diretamente no BITMAP do TSPL.
     """
     w, h = img.size
     pixels = img.load()
@@ -58,17 +58,12 @@ def img_to_bytes(img):
             val = 0
             for bit in range(8):
                 x = bx * 8 + bit
-                pix = pixels[x, y]  # 0 = preto, 255 = branco no Pillow
-                
-                if pix == 255:      # branco → deve virar 0
-                    pass
-                else:               # preto → deve virar 1
+                pix = pixels[x, y]
+                if pix == 0:  # preto
                     val |= (1 << (7 - bit))
-
             raw.append(val)
 
     return raw, bytes_per_line, h
-
 
 
 def processar():
@@ -113,7 +108,7 @@ def processar():
                     f"CLS\n"
                     f"SIZE {LARGURA_MM} mm, {ALTURA_MM} mm\n"
                     f"GAP {GAP_MM} mm, 0 mm\n"
-                    f"BITMAP 0,0,{bytes_w},{h},1,"
+                    f"BITMAP 0,0,{bytes_w},{h},0,"
                 ).encode("ascii")
 
                 f.write(header)
