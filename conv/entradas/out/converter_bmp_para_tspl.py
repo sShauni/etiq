@@ -1,17 +1,16 @@
 import os
-import binascii
 import traceback
 from PIL import Image
 
 # ==============================
 # CONFIGURAÇÕES
 # ==============================
-PASTA_ENTRADA = "out"          # onde estão os .bmp
-PASTA_SAIDA = "tspl_out"       # onde salvar .tspl
+PASTA_ENTRADA = "out"       # onde estão os .bmp
+PASTA_SAIDA = "tspl_out"    # onde salvar os .tspl
 
 DPI = 203
-LARGURA_MM = 100   # largura etiqueta
-ALTURA_MM = 75     # altura etiqueta
+LARGURA_MM = 100
+ALTURA_MM = 75
 GAP_MM = 3
 THRESHOLD = 128
 # ==============================
@@ -37,20 +36,22 @@ def pad_width(img):
     if w % 8 == 0:
         return img
     new_w = ((w + 7) // 8) * 8
-    new_img = Image.new("1", (new_w, h), 1)
+    new_img = Image.new("1", (new_w, h), 1)  # branco
     new_img.paste(img, (0, 0))
     return new_img
 
 
 def img_to_bytes(img):
     """
-    Converte imagem 1-bit em bytes crus (não hex!)
-    usado diretamente no BITMAP do TSPL.
+    Converte imagem 1-bit em bytes crus.
+    Pillow: 0 = preto, 255 = branco
+    TSPL modo 0 também usa 0 = preto.
+    Portanto, NÃO inverter bits.
     """
     w, h = img.size
     pixels = img.load()
     bytes_per_line = w // 8
-    
+
     raw = bytearray()
 
     for y in range(h):
@@ -59,15 +60,17 @@ def img_to_bytes(img):
             for bit in range(8):
                 x = bx * 8 + bit
                 pix = pixels[x, y]
-                if pix == 0:  # preto
+
+                if pix == 0:  # preto → bit 1
                     val |= (1 << (7 - bit))
+
             raw.append(val)
 
     return raw, bytes_per_line, h
 
 
 def processar():
-    print("[INÍCIO] Convertendo BMP -> TSPL (com saída binária)")
+    print("[INÍCIO] Convertendo BMP → TSPL BINÁRIO")
 
     ensure_dir(PASTA_SAIDA)
 
@@ -78,7 +81,7 @@ def processar():
         return
 
     if not arquivos:
-        print(f"[AVISO] Nenhum .bmp encontrado em '{PASTA_ENTRADA}'.")
+        print(f"[AVISO] Nenhum arquivo .bmp encontrado em '{PASTA_ENTRADA}'.")
         return
 
     target_w = mm_to_px(LARGURA_MM, DPI)
@@ -87,32 +90,40 @@ def processar():
     total = 0
 
     for arq in arquivos:
-        caminho = os.path.join(PASTA_ENTRADA, arq)
+        path = os.path.join(PASTA_ENTRADA, arq)
         nome = os.path.splitext(arq)[0]
-
         print(f"[INFO] Processando {arq}...")
 
         try:
-            img = Image.open(caminho)
+            img = Image.open(path)
+
+            # Resize para o tamanho exato da etiqueta
             img = img.resize((target_w, target_h), Image.LANCZOS)
+
+            # Converter para 1 bit
             img = convert_to_1bit(img, THRESHOLD)
+
+            # *** CRUCIAL ***
+            # BMP é invertido verticalmente → flip obrigatório
+            img = img.transpose(Image.FLIP_TOP_BOTTOM)
+
+            # Padding para múltiplos de 8
             img = pad_width(img)
 
-            raw_bytes, bytes_w, h = img_to_bytes(img)
+            # Converter para bytes crus
+            raw, bytes_w, h = img_to_bytes(img)
 
+            # Criar TSPL (binário)
             out_path = os.path.join(PASTA_SAIDA, f"{nome}.tspl")
 
             with open(out_path, "wb") as f:
+                f.write(b"CLS\n")
+                f.write(f"SIZE {LARGURA_MM} mm, {ALTURA_MM} mm\n".encode("ascii"))
+                f.write(f"GAP {GAP_MM} mm, 0 mm\n".encode("ascii"))
 
-                header = (
-                    f"CLS\n"
-                    f"SIZE {LARGURA_MM} mm, {ALTURA_MM} mm\n"
-                    f"GAP {GAP_MM} mm, 0 mm\n"
-                    f"BITMAP 0,0,{bytes_w},{h},0,"
-                ).encode("ascii")
-
-                f.write(header)
-                f.write(raw_bytes)
+                # MODO 0 = bitmap cru
+                f.write(f"BITMAP 0,0,{bytes_w},{h},0,".encode("ascii"))
+                f.write(raw)
                 f.write(b"\nPRINT 1\n")
 
             print(f"[OK] Gerado: {out_path}")
@@ -122,8 +133,7 @@ def processar():
             print(f"[ERRO] Falha ao processar {arq}: {e}")
             traceback.print_exc()
 
-    print(f"[FIM] {total} arquivos convertidos.]")
-
+    print(f"[FIM] {total} arquivos convertidos.")
 
 
 if __name__ == "__main__":
