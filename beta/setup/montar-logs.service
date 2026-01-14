@@ -6,7 +6,7 @@ Requires=network-online.target
 
 [Service]
 Type=simple
-ExecStart=/home/pi/etiq/utils/montar_logs.sh
+ExecStart=/home/pi/etiq/montar_logs.sh
 Restart=on-failure
 RestartSec=10
 
