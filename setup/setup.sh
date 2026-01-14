@@ -13,7 +13,7 @@ sudo systemctl start montar-logs.service
 sudo systemctl start startup.service
 
 sudo mkdir -p /mnt/logs
-sudo mount -t cifs //192.168.0.250/Compumate/Producao	-o username=API,passord=25565
+sudo mount -t cifs //192.168.0.250/Compumate/Producao	-o username=compumate,passord=TAGCompumate2025*
 
 git clone https://github.com/goodtft/LCD-show.git
 chmod -R 755 LCD-show
