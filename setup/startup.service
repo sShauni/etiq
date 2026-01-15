@@ -1,17 +1,37 @@
 [Unit]
-Description=Startup Etiqueta Programa
-After=multi-user.target
+Description=Sistema de Etiquetas - Controle de Producao
+After=multi-user.target network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/python3 /home/pi/etiq/main.py
-WorkingDirectory=/home/pi/etiq
-StandardOutput=append:/home/pi/etiq/log.txt
-StandardError=append:/home/pi/etiq/log.txt
 User=pi
+Group=pi
+WorkingDirectory=/home/pi/etiq
+
+# Variáveis de ambiente para GUI
 Environment=DISPLAY=:0
 Environment=XAUTHORITY=/home/pi/.Xauthority
 Environment=XDG_RUNTIME_DIR=/run/user/1000
 
+# IMPORTANTE: Define qual máquina é (opcional se hostname estiver correto)
+# Environment=MACHINE_ID=S06
+
+# Adiciona o diretório ao PYTHONPATH
+Environment=PYTHONPATH=/home/pi/etiq
+
+# Comando de execução
+ExecStart=/usr/bin/python3 /home/pi/etiq/main.py
+
+# Logs (append mantém histórico)
+StandardOutput=append:/home/pi/etiq/log.txt
+StandardError=append:/home/pi/etiq/log.txt
+
+# Restart automático se falhar
+Restart=on-failure
+RestartSec=10
+
+# Timeout para inicialização
+TimeoutStartSec=30
+
 [Install]
-WantedBy=multi-user.target
+WantedBy=graphical.target
