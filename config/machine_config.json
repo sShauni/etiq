@@ -111,7 +111,7 @@
     "secundario_valor": {"0": 0.1, "1": 0.2, "2": 0.3, "5": 0.4}
   },
   
-  "S03": {
+  "s03": {
     "machine_id": "s03",
     "gpio_pin": 20,
     "printer_name": "Thermal",
