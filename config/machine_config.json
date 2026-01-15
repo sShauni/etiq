@@ -6,6 +6,7 @@
     "printer_delay": 1,
     "test_mode": true,
     "log_dir": "/mnt/logs",
+    "log_extension": ".csv",
     "sku_file": "SKU.xlsx",
     "labels_dir": "etiquetas",
     "label_extension": ".tspl",
@@ -40,13 +41,14 @@
     "secundario_valor": {"0": 0.1, "1": 0.2, "2": 0.3, "5": 0.4}
   },
   
-  "S06": {
-    "machine_id": "S06",
+  "S01": {
+    "machine_id": "S01",
     "gpio_pin": 20,
     "printer_name": "Thermal",
     "printer_delay": 1,
     "test_mode": true,
     "log_dir": "/mnt/logs",
+    "log_extension": ".csv",
     "sku_file": "SKU.xlsx",
     "labels_dir": "etiquetas",
     "label_extension": ".tspl",
@@ -64,11 +66,186 @@
       {"texto": "0,50m (2ª)", "base": 5}
     ],
     
-    "botoes_visiveis": [true, true, true, true, true, true, true, true, true, true],
+    "botoes_visiveis": [true, true, true, true, true, true, true, true, false, false],
     "fios": ["1,24mm", "1,60mm", "1.90mm", "2.30mm", "2.76mm", "2.10mm"],
-    "fios_visiveis": [true, true, true, true, true, true],
+    "fios_visiveis": [false, true, true, false, false, false],
     "malhas": ["5x10cm", "6,5x15cm", "5x15cm", "2,5x2,5cm", "5x5cm", "5x7,5cm"],
-    "malhas_visiveis": [true, true, true, true, true, true],
+    "malhas_visiveis": [true, false, false, false, false, false],
+    "combinacoes_validas": [[0, 0], [0, 1], [0, 2], [1, 0], [2, 0], [1, 1], [5, 5], [5, 0], [0, 5], [5, 1], [1, 5]],
+    "primario_valor": {"0": 1.0, "1": 2.0, "2": 3.0, "3": 4.0, "4": 5.0, "5": 6.0},
+    "secundario_valor": {"0": 0.1, "1": 0.2, "2": 0.3, "5": 0.4}
+  },
+  
+  "S02": {
+    "machine_id": "S02",
+    "gpio_pin": 20,
+    "printer_name": "Thermal",
+    "printer_delay": 1,
+    "test_mode": false,
+    "log_dir": "/mnt/logs",
+    "log_extension": ".csv",
+    "sku_file": "SKU.xlsx",
+    "labels_dir": "etiquetas",
+    "label_extension": ".tspl",
+    
+    "alturas_exibidas": [
+      {"texto": "1,00m", "base": 0},
+      {"texto": "1,00m (2ª)", "base": 0},
+      {"texto": "1,20m", "base": 1},
+      {"texto": "1,20m (2ª)", "base": 1},
+      {"texto": "1,50m", "base": 2},
+      {"texto": "1,50m (2ª)", "base": 2},
+      {"texto": "1,80m", "base": 3},
+      {"texto": "2,00m", "base": 4},
+      {"texto": "0,50m", "base": 5},
+      {"texto": "0,50m (2ª)", "base": 5}
+    ],
+    
+    "botoes_visiveis": [true, true, true, true, true, true, true, true, false, false],
+    "fios": ["1,24mm", "1,60mm", "1.90mm", "2.30mm", "2.76mm", "2.10mm"],
+    "fios_visiveis": [false, false, false, true, false, false],
+    "malhas": ["5x10cm", "6,5x15cm", "5x15cm", "2,5x2,5cm", "5x5cm", "5x7,5cm"],
+    "malhas_visiveis": [false, false, true, false, false, false],
+    "combinacoes_validas": [[0, 0], [0, 1], [0, 2], [1, 0], [2, 0], [1, 1], [5, 5], [5, 0], [0, 5], [5, 1], [1, 5]],
+    "primario_valor": {"0": 1.0, "1": 2.0, "2": 3.0, "3": 4.0, "4": 5.0, "5": 6.0},
+    "secundario_valor": {"0": 0.1, "1": 0.2, "2": 0.3, "5": 0.4}
+  },
+  
+  "S03": {
+    "machine_id": "S03",
+    "gpio_pin": 20,
+    "printer_name": "Thermal",
+    "printer_delay": 1,
+    "test_mode": false,
+    "log_dir": "/mnt/logs",
+    "log_extension": ".csv",
+    "sku_file": "SKU.xlsx",
+    "labels_dir": "etiquetas",
+    "label_extension": ".tspl",
+    
+    "alturas_exibidas": [
+      {"texto": "1,00m", "base": 0},
+      {"texto": "1,00m (2ª)", "base": 0},
+      {"texto": "1,20m", "base": 1},
+      {"texto": "1,20m (2ª)", "base": 1},
+      {"texto": "1,50m", "base": 2},
+      {"texto": "1,50m (2ª)", "base": 2},
+      {"texto": "1,80m", "base": 3},
+      {"texto": "2,00m", "base": 4},
+      {"texto": "0,50m", "base": 5},
+      {"texto": "0,50m (2ª)", "base": 5}
+    ],
+    
+    "botoes_visiveis": [true, true, true, true, true, true, true, true, false, false],
+    "fios": ["1,24mm", "1,60mm", "1.90mm", "2.30mm", "2.76mm", "2.10mm"],
+    "fios_visiveis": [false, false, true, false, false, false],
+    "malhas": ["5x10cm", "6,5x15cm", "5x15cm", "2,5x2,5cm", "5x5cm", "5x7,5cm"],
+    "malhas_visiveis": [true, false, false, false, false, false],
+    "combinacoes_validas": [[0, 0], [0, 1], [0, 2], [1, 0], [2, 0], [1, 1], [5, 5], [5, 0], [0, 5], [5, 1], [1, 5]],
+    "primario_valor": {"0": 1.0, "1": 2.0, "2": 3.0, "3": 4.0, "4": 5.0, "5": 6.0},
+    "secundario_valor": {"0": 0.1, "1": 0.2, "2": 0.3, "5": 0.4}
+  },
+  
+  "S04": {
+    "machine_id": "S04",
+    "gpio_pin": 20,
+    "printer_name": "Thermal",
+    "printer_delay": 1,
+    "test_mode": false,
+    "log_dir": "/mnt/logs",
+    "log_extension": ".csv",
+    "sku_file": "SKU.xlsx",
+    "labels_dir": "etiquetas",
+    "label_extension": ".tspl",
+    
+    "alturas_exibidas": [
+      {"texto": "1,00m", "base": 0},
+      {"texto": "1,00m (2ª)", "base": 0},
+      {"texto": "1,20m", "base": 1},
+      {"texto": "1,20m (2ª)", "base": 1},
+      {"texto": "1,50m", "base": 2},
+      {"texto": "1,50m (2ª)", "base": 2},
+      {"texto": "1,80m", "base": 3},
+      {"texto": "2,00m", "base": 4},
+      {"texto": "0,50m", "base": 5},
+      {"texto": "0,50m (2ª)", "base": 5}
+    ],
+    
+    "botoes_visiveis": [true, true, true, true, true, true, true, true, false, false],
+    "fios": ["1,24mm", "1,60mm", "1.90mm", "2.30mm", "2.76mm", "2.10mm"],
+    "fios_visiveis": [false, false, false, true, false, false],
+    "malhas": ["5x10cm", "6,5x15cm", "5x15cm", "2,5x2,5cm", "5x5cm", "5x7,5cm"],
+    "malhas_visiveis": [false, true, true, false, false, false],
+    "combinacoes_validas": [[0, 0], [0, 1], [0, 2], [1, 0], [2, 0], [1, 1], [5, 5], [5, 0], [0, 5], [5, 1], [1, 5]],
+    "primario_valor": {"0": 1.0, "1": 2.0, "2": 3.0, "3": 4.0, "4": 5.0, "5": 6.0},
+    "secundario_valor": {"0": 0.1, "1": 0.2, "2": 0.3, "5": 0.4}
+  },
+  
+  "S05": {
+    "machine_id": "S05",
+    "gpio_pin": 20,
+    "printer_name": "Thermal",
+    "printer_delay": 1,
+    "test_mode": false,
+    "log_dir": "/mnt/logs",
+    "log_extension": ".csv",
+    "sku_file": "SKU.xlsx",
+    "labels_dir": "etiquetas",
+    "label_extension": ".tspl",
+    
+    "alturas_exibidas": [
+      {"texto": "1,00m", "base": 0},
+      {"texto": "1,00m (2ª)", "base": 0},
+      {"texto": "1,20m", "base": 1},
+      {"texto": "1,20m (2ª)", "base": 1},
+      {"texto": "1,50m", "base": 2},
+      {"texto": "1,50m (2ª)", "base": 2},
+      {"texto": "1,80m", "base": 3},
+      {"texto": "2,00m", "base": 4},
+      {"texto": "0,50m", "base": 5},
+      {"texto": "0,50m (2ª)", "base": 5}
+    ],
+    
+    "botoes_visiveis": [true, false, false, false, true, false, false, false, true, true],
+    "fios": ["1,24mm", "1,60mm", "1.90mm", "2.30mm", "2.76mm", "2.10mm"],
+    "fios_visiveis": [true, false, false, false, false, false],
+    "malhas": ["5x10cm", "6,5x15cm", "5x15cm", "2,5x2,5cm", "5x5cm", "5x7,5cm"],
+    "malhas_visiveis": [false, false, false, true, false, false],
+    "combinacoes_validas": [[0, 0], [0, 1], [0, 2], [1, 0], [2, 0], [1, 1], [5, 5], [5, 0], [0, 5], [5, 1], [1, 5]],
+    "primario_valor": {"0": 1.0, "1": 2.0, "2": 3.0, "3": 4.0, "4": 5.0, "5": 6.0},
+    "secundario_valor": {"0": 0.1, "1": 0.2, "2": 0.3, "5": 0.4}
+  },
+  
+  "S06": {
+    "machine_id": "S06",
+    "gpio_pin": 20,
+    "printer_name": "Thermal",
+    "printer_delay": 1,
+    "test_mode": false,
+    "log_dir": "/mnt/logs",
+    "log_extension": ".csv",
+    "sku_file": "SKU.xlsx",
+    "labels_dir": "etiquetas",
+    "label_extension": ".tspl",
+    
+    "alturas_exibidas": [
+      {"texto": "1,00m", "base": 0},
+      {"texto": "1,00m (2ª)", "base": 0},
+      {"texto": "1,20m", "base": 1},
+      {"texto": "1,20m (2ª)", "base": 1},
+      {"texto": "1,50m", "base": 2},
+      {"texto": "1,50m (2ª)", "base": 2},
+      {"texto": "1,80m", "base": 3},
+      {"texto": "2,00m", "base": 4},
+      {"texto": "0,50m", "base": 5},
+      {"texto": "0,50m (2ª)", "base": 5}
+    ],
+    
+    "botoes_visiveis": [true, true, true, true, true, true, true, true, false, true],
+    "fios": ["1,24mm", "1,60mm", "1.90mm", "2.30mm", "2.76mm", "2.10mm"],
+    "fios_visiveis": [false, true, true, true, true, false],
+    "malhas": ["5x10cm", "6,5x15cm", "5x15cm", "2,5x2,5cm", "5x5cm", "5x7,5cm"],
+    "malhas_visiveis": [true, true, true, false, true, true],
     "combinacoes_validas": [[0, 0], [0, 1], [0, 2], [1, 0], [2, 0], [1, 1], [5, 5], [5, 0], [0, 5], [5, 1], [1, 5]],
     "primario_valor": {"0": 1.0, "1": 2.0, "2": 3.0, "3": 4.0, "4": 5.0, "5": 6.0},
     "secundario_valor": {"0": 0.1, "1": 0.2, "2": 0.3, "5": 0.4}
@@ -76,11 +253,12 @@
   
   "S07": {
     "machine_id": "S07",
-    "gpio_pin": 21,
+    "gpio_pin": 20,
     "printer_name": "Thermal",
     "printer_delay": 1,
     "test_mode": false,
     "log_dir": "/mnt/logs",
+    "log_extension": ".csv",
     "sku_file": "SKU.xlsx",
     "labels_dir": "etiquetas",
     "label_extension": ".tspl",
@@ -98,11 +276,151 @@
       {"texto": "0,50m (2ª)", "base": 5}
     ],
     
-    "botoes_visiveis": [true, true, true, true, true, true, true, true, true, true],
+    "botoes_visiveis": [true, true, true, true, true, true, true, true, false, true],
     "fios": ["1,24mm", "1,60mm", "1.90mm", "2.30mm", "2.76mm", "2.10mm"],
-    "fios_visiveis": [true, true, true, true, true, true],
+    "fios_visiveis": [false, true, true, true, true, false],
     "malhas": ["5x10cm", "6,5x15cm", "5x15cm", "2,5x2,5cm", "5x5cm", "5x7,5cm"],
-    "malhas_visiveis": [true, true, true, true, true, true],
+    "malhas_visiveis": [true, true, true, false, true, true],
+    "combinacoes_validas": [[0, 0], [0, 1], [0, 2], [1, 0], [2, 0], [1, 1], [5, 5], [5, 0], [0, 5], [5, 1], [1, 5]],
+    "primario_valor": {"0": 1.0, "1": 2.0, "2": 3.0, "3": 4.0, "4": 5.0, "5": 6.0},
+    "secundario_valor": {"0": 0.1, "1": 0.2, "2": 0.3, "5": 0.4}
+  },
+  
+  "S08": {
+    "machine_id": "S08",
+    "gpio_pin": 20,
+    "printer_name": "Thermal",
+    "printer_delay": 1,
+    "test_mode": false,
+    "log_dir": "/mnt/logs",
+    "log_extension": ".csv",
+    "sku_file": "SKU.xlsx",
+    "labels_dir": "etiquetas",
+    "label_extension": ".tspl",
+    
+    "alturas_exibidas": [
+      {"texto": "1,00m", "base": 0},
+      {"texto": "1,00m (2ª)", "base": 0},
+      {"texto": "1,20m", "base": 1},
+      {"texto": "1,20m (2ª)", "base": 1},
+      {"texto": "1,50m", "base": 2},
+      {"texto": "1,50m (2ª)", "base": 2},
+      {"texto": "1,80m", "base": 3},
+      {"texto": "2,00m", "base": 4},
+      {"texto": "0,50m", "base": 5},
+      {"texto": "0,50m (2ª)", "base": 5}
+    ],
+    
+    "botoes_visiveis": [true, true, true, true, true, true, true, true, false, true],
+    "fios": ["1,24mm", "1,60mm", "1.90mm", "2.30mm", "2.76mm", "2.10mm"],
+    "fios_visiveis": [false, false, true, false, false, false],
+    "malhas": ["5x10cm", "6,5x15cm", "5x15cm", "2,5x2,5cm", "5x5cm", "5x7,5cm"],
+    "malhas_visiveis": [true, false, false, false, false, false],
+    "combinacoes_validas": [[0, 0], [0, 1], [0, 2], [1, 0], [2, 0], [1, 1], [5, 5], [5, 0], [0, 5], [5, 1], [1, 5]],
+    "primario_valor": {"0": 1.0, "1": 2.0, "2": 3.0, "3": 4.0, "4": 5.0, "5": 6.0},
+    "secundario_valor": {"0": 0.1, "1": 0.2, "2": 0.3, "5": 0.4}
+  },
+    
+  "S09": {
+    "machine_id": "S09",
+    "gpio_pin": 20,
+    "printer_name": "Thermal",
+    "printer_delay": 1,
+    "test_mode": false,
+    "log_dir": "/mnt/logs",
+    "log_extension": ".csv",
+    "sku_file": "SKU.xlsx",
+    "labels_dir": "etiquetas",
+    "label_extension": ".tspl",
+    
+    "alturas_exibidas": [
+      {"texto": "1,00m", "base": 0},
+      {"texto": "1,00m (2ª)", "base": 0},
+      {"texto": "1,20m", "base": 1},
+      {"texto": "1,20m (2ª)", "base": 1},
+      {"texto": "1,50m", "base": 2},
+      {"texto": "1,50m (2ª)", "base": 2},
+      {"texto": "1,80m", "base": 3},
+      {"texto": "2,00m", "base": 4},
+      {"texto": "0,50m", "base": 5},
+      {"texto": "0,50m (2ª)", "base": 5}
+    ],
+    
+    "botoes_visiveis": [true, true, true, true, true, true, true, true, false, true],
+    "fios": ["1,24mm", "1,60mm", "1.90mm", "2.30mm", "2.76mm", "2.10mm"],
+    "fios_visiveis": [false, false, true, false, false, false],
+    "malhas": ["5x10cm", "6,5x15cm", "5x15cm", "2,5x2,5cm", "5x5cm", "5x7,5cm"],
+    "malhas_visiveis": [true, false, false, false, false, false],
+    "combinacoes_validas": [[0, 0], [0, 1], [0, 2], [1, 0], [2, 0], [1, 1], [5, 5], [5, 0], [0, 5], [5, 1], [1, 5]],
+    "primario_valor": {"0": 1.0, "1": 2.0, "2": 3.0, "3": 4.0, "4": 5.0, "5": 6.0},
+    "secundario_valor": {"0": 0.1, "1": 0.2, "2": 0.3, "5": 0.4}
+  },
+  
+  "S10": {
+    "machine_id": "S10",
+    "gpio_pin": 20,
+    "printer_name": "Thermal",
+    "printer_delay": 1,
+    "test_mode": false,
+    "log_dir": "/mnt/logs",
+    "log_extension": ".csv",
+    "sku_file": "SKU.xlsx",
+    "labels_dir": "etiquetas",
+    "label_extension": ".tspl",
+    
+    "alturas_exibidas": [
+      {"texto": "1,00m", "base": 0},
+      {"texto": "1,00m (2ª)", "base": 0},
+      {"texto": "1,20m", "base": 1},
+      {"texto": "1,20m (2ª)", "base": 1},
+      {"texto": "1,50m", "base": 2},
+      {"texto": "1,50m (2ª)", "base": 2},
+      {"texto": "1,80m", "base": 3},
+      {"texto": "2,00m", "base": 4},
+      {"texto": "0,50m", "base": 5},
+      {"texto": "0,50m (2ª)", "base": 5}
+    ],
+    
+    "botoes_visiveis": [true, true, true, true, true, true, true, true, false, true],
+    "fios": ["1,24mm", "1,60mm", "1.90mm", "2.30mm", "2.76mm", "2.10mm"],
+    "fios_visiveis": [false, false, true, false, false, false],
+    "malhas": ["5x10cm", "6,5x15cm", "5x15cm", "2,5x2,5cm", "5x5cm", "5x7,5cm"],
+    "malhas_visiveis": [true, false, false, false, false, false],
+    "combinacoes_validas": [[0, 0], [0, 1], [0, 2], [1, 0], [2, 0], [1, 1], [5, 5], [5, 0], [0, 5], [5, 1], [1, 5]],
+    "primario_valor": {"0": 1.0, "1": 2.0, "2": 3.0, "3": 4.0, "4": 5.0, "5": 6.0},
+    "secundario_valor": {"0": 0.1, "1": 0.2, "2": 0.3, "5": 0.4}
+  },
+  
+  "S11": {
+    "machine_id": "S11",
+    "gpio_pin": 20,
+    "printer_name": "Thermal",
+    "printer_delay": 1,
+    "test_mode": false,
+    "log_dir": "/mnt/logs",
+    "log_extension": ".csv",
+    "sku_file": "SKU.xlsx",
+    "labels_dir": "etiquetas",
+    "label_extension": ".tspl",
+    
+    "alturas_exibidas": [
+      {"texto": "1,00m", "base": 0},
+      {"texto": "1,00m (2ª)", "base": 0},
+      {"texto": "1,20m", "base": 1},
+      {"texto": "1,20m (2ª)", "base": 1},
+      {"texto": "1,50m", "base": 2},
+      {"texto": "1,50m (2ª)", "base": 2},
+      {"texto": "1,80m", "base": 3},
+      {"texto": "2,00m", "base": 4},
+      {"texto": "0,50m", "base": 5},
+      {"texto": "0,50m (2ª)", "base": 5}
+    ],
+    
+    "botoes_visiveis": [true, true, true, true, true, true, true, true, false, true],
+    "fios": ["1,24mm", "1,60mm", "1.90mm", "2.30mm", "2.76mm", "2.10mm"],
+    "fios_visiveis": [false, false, true, false, false, false],
+    "malhas": ["5x10cm", "6,5x15cm", "5x15cm", "2,5x2,5cm", "5x5cm", "5x7,5cm"],
+    "malhas_visiveis": [true, false, false, false, false, false],
     "combinacoes_validas": [[0, 0], [0, 1], [0, 2], [1, 0], [2, 0], [1, 1], [5, 5], [5, 0], [0, 5], [5, 1], [1, 5]],
     "primario_valor": {"0": 1.0, "1": 2.0, "2": 3.0, "3": 4.0, "4": 5.0, "5": 6.0},
     "secundario_valor": {"0": 0.1, "1": 0.2, "2": 0.3, "5": 0.4}

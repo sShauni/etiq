@@ -1,18 +1,18 @@
 """
-Sistema de logging de produção em Excel.
+Sistema de logging de produção em CSV.
 Registra SKUs produzidos por máquina e data.
 """
 
 import os
+import csv
 from datetime import datetime
-from openpyxl import Workbook, load_workbook
-from typing import Optional
+from typing import Optional, Dict
 from config.settings import settings
 from core.sku_mapper import SKUMapper
 
 
 class ProductionLogger:
-    """Gerencia logs de produção em arquivos Excel."""
+    """Gerencia logs de produção em arquivos CSV."""
     
     def __init__(self, sku_mapper: SKUMapper):
         """
@@ -37,51 +37,76 @@ class ProductionLogger:
             date: Data para o log (padrão: hoje)
         
         Returns:
-            Caminho completo do arquivo Excel
+            Caminho completo do arquivo CSV
         """
         if date is None:
             date = datetime.now()
         
-        # Formato: S06250114.xlsx (máquina + AAMMDD)
+        # Formato: S06250114.csv (máquina + AAMMDD)
         date_str = date.strftime("%y%m%d")
-        filename = f"{self.machine_id}{date_str}.xlsx"
+        filename = f"{self.machine_id}{date_str}.csv"
         
         return os.path.join(self.log_dir, filename)
     
-    def _ensure_log_file(self, filepath: str) -> Workbook:
+    def _read_csv_data(self, filepath: str) -> Dict[str, int]:
         """
-        Garante que o arquivo de log existe e tem estrutura correta.
+        Lê dados do CSV e retorna um dicionário SKU -> Quantidade.
         
         Args:
-            filepath: Caminho do arquivo Excel
+            filepath: Caminho do arquivo CSV
         
         Returns:
-            Workbook carregado ou criado
+            Dict com SKUs e quantidades
         """
-        if os.path.exists(filepath):
-            try:
-                wb = load_workbook(filepath)
-                return wb
-            except Exception as e:
-                print(f"⚠ Erro ao carregar log existente: {e}")
-                print(f"   Criando novo arquivo...")
+        data = {}
         
-        # Cria novo arquivo
-        wb = Workbook()
-        ws = wb.active
-        ws.title = "Produção"
+        if not os.path.exists(filepath):
+            return data
         
-        # Cabeçalhos
-        ws.append(["SKU", "Quantidade"])
+        try:
+            with open(filepath, 'r', newline='', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    sku = row.get('SKU', '').strip()
+                    quantidade = row.get('Quantidade', '0').strip()
+                    
+                    if sku:
+                        try:
+                            data[sku] = int(quantidade)
+                        except ValueError:
+                            data[sku] = 0
+        except Exception as e:
+            print(f"⚠ Erro ao ler CSV: {e}")
         
-        # Formata cabeçalhos
-        for cell in ws[1]:
-            cell.font = cell.font.copy(bold=True)
+        return data
+    
+    def _write_csv_data(self, filepath: str, data: Dict[str, int]) -> bool:
+        """
+        Escreve dados no CSV.
         
-        wb.save(filepath)
-        print(f"✓ Novo arquivo de log criado: {os.path.basename(filepath)}")
+        Args:
+            filepath: Caminho do arquivo CSV
+            data: Dict com SKUs e quantidades
         
-        return wb
+        Returns:
+            True se sucesso, False se falha
+        """
+        try:
+            with open(filepath, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.writer(f)
+                
+                # Escreve cabeçalho
+                writer.writerow(['SKU', 'Quantidade'])
+                
+                # Escreve dados ordenados por SKU
+                for sku in sorted(data.keys()):
+                    writer.writerow([sku, data[sku]])
+            
+            return True
+            
+        except Exception as e:
+            print(f"✗ Erro ao escrever CSV: {e}")
+            return False
     
     def log_production(self, codigo: float, automatica: bool = False) -> bool:
         """
@@ -105,34 +130,22 @@ class ProductionLogger:
         filepath = self._get_log_filepath()
         
         try:
-            wb = self._ensure_log_file(filepath)
-            ws = wb.active
+            # Lê dados existentes
+            data = self._read_csv_data(filepath)
             
-            # Procura SKU existente
-            sku_encontrado = False
+            # Incrementa ou adiciona SKU
+            if sku in data:
+                data[sku] += 1
+            else:
+                data[sku] = 1
             
-            for row in range(2, ws.max_row + 1):
-                cell_sku = ws.cell(row=row, column=1)
-                
-                if cell_sku.value == sku:
-                    # Incrementa quantidade
-                    cell_qtd = ws.cell(row=row, column=2)
-                    current_qty = cell_qtd.value or 0
-                    cell_qtd.value = current_qty + 1
-                    sku_encontrado = True
-                    break
-            
-            # Se não encontrou, adiciona nova linha
-            if not sku_encontrado:
-                ws.append([sku, 1])
-            
-            # Salva arquivo
-            wb.save(filepath)
-            
-            modo = "automática" if automatica else "manual"
-            print(f"✓ Log registrado ({modo}): SKU {sku} -> {os.path.basename(filepath)}")
-            
-            return True
+            # Salva de volta
+            if self._write_csv_data(filepath, data):
+                modo = "automática" if automatica else "manual"
+                print(f"✓ Log registrado ({modo}): SKU {sku} -> {os.path.basename(filepath)}")
+                return True
+            else:
+                return False
             
         except Exception as e:
             print(f"✗ Erro ao registrar log: {e}")
@@ -157,7 +170,7 @@ class ProductionLogger:
         
         return sucessos
     
-    def get_today_summary(self) -> dict:
+    def get_today_summary(self) -> Dict[str, int]:
         """
         Obtém resumo da produção de hoje.
         
@@ -165,32 +178,61 @@ class ProductionLogger:
             Dict com SKUs e quantidades
         """
         filepath = self._get_log_filepath()
-        
-        if not os.path.exists(filepath):
-            return {}
-        
-        try:
-            wb = load_workbook(filepath, read_only=True)
-            ws = wb.active
-            
-            summary = {}
-            
-            for row in ws.iter_rows(min_row=2, values_only=True):
-                sku, quantidade = row
-                if sku and quantidade:
-                    summary[sku] = quantidade
-            
-            wb.close()
-            return summary
-            
-        except Exception as e:
-            print(f"Erro ao ler resumo: {e}")
-            return {}
+        return self._read_csv_data(filepath)
     
     def get_total_today(self) -> int:
         """Obtém total de peças produzidas hoje."""
         summary = self.get_today_summary()
         return sum(summary.values())
+    
+    def export_to_excel(self, date: Optional[datetime] = None) -> Optional[str]:
+        """
+        Exporta CSV para Excel (opcional, requer openpyxl).
+        
+        Args:
+            date: Data do log (padrão: hoje)
+        
+        Returns:
+            Caminho do arquivo Excel criado ou None se falhar
+        """
+        try:
+            from openpyxl import Workbook
+            
+            csv_path = self._get_log_filepath(date)
+            data = self._read_csv_data(csv_path)
+            
+            if not data:
+                print("Nenhum dado para exportar")
+                return None
+            
+            # Cria arquivo Excel
+            excel_path = csv_path.replace('.csv', '.xlsx')
+            wb = Workbook()
+            ws = wb.active
+            ws.title = "Produção"
+            
+            # Cabeçalhos
+            ws.append(['SKU', 'Quantidade'])
+            
+            # Dados
+            for sku in sorted(data.keys()):
+                ws.append([sku, data[sku]])
+            
+            # Formata cabeçalhos
+            for cell in ws[1]:
+                cell.font = cell.font.copy(bold=True)
+            
+            wb.save(excel_path)
+            print(f"✓ Exportado para Excel: {os.path.basename(excel_path)}")
+            
+            return excel_path
+            
+        except ImportError:
+            print("⚠ openpyxl não instalado, não é possível exportar para Excel")
+            return None
+        except Exception as e:
+            print(f"✗ Erro ao exportar para Excel: {e}")
+            return None
 
 
 if __name__ == '__main__':
@@ -221,6 +263,12 @@ if __name__ == '__main__':
         for sku, qty in summary.items():
             print(f"  {sku}: {qty} unidades")
         print(f"Total: {total} peças")
+        
+        # Testa exportação para Excel (opcional)
+        print("\nTestando exportação para Excel...")
+        excel_path = logger.export_to_excel()
+        if excel_path:
+            print(f"Excel criado: {excel_path}")
         
     except Exception as e:
         print(f"Erro no teste: {e}")
