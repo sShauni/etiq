@@ -41,7 +41,7 @@
     "secundario_valor": {"0": 0.1, "1": 0.2, "2": 0.3, "5": 0.4}
   },
   
-  "S01": {
+  "s01": {
     "machine_id": "s01",
     "gpio_pin": 20,
     "printer_name": "Thermal",
@@ -76,7 +76,7 @@
     "secundario_valor": {"0": 0.1, "1": 0.2, "2": 0.3, "5": 0.4}
   },
   
-  "S02": {
+  "s02": {
     "machine_id": "s02",
     "gpio_pin": 20,
     "printer_name": "Thermal",
@@ -146,7 +146,7 @@
     "secundario_valor": {"0": 0.1, "1": 0.2, "2": 0.3, "5": 0.4}
   },
   
-  "S04": {
+  "s04": {
     "machine_id": "s04",
     "gpio_pin": 20,
     "printer_name": "Thermal",
@@ -181,7 +181,7 @@
     "secundario_valor": {"0": 0.1, "1": 0.2, "2": 0.3, "5": 0.4}
   },
   
-  "S05": {
+  "s05": {
     "machine_id": "s05",
     "gpio_pin": 20,
     "printer_name": "Thermal",
@@ -216,7 +216,7 @@
     "secundario_valor": {"0": 0.1, "1": 0.2, "2": 0.3, "5": 0.4}
   },
   
-  "S06": {
+  "s06": {
     "machine_id": "s06",
     "gpio_pin": 20,
     "printer_name": "Thermal",
@@ -251,7 +251,7 @@
     "secundario_valor": {"0": 0.1, "1": 0.2, "2": 0.3, "5": 0.4}
   },
   
-  "S07": {
+  "s07": {
     "machine_id": "s07",
     "gpio_pin": 20,
     "printer_name": "Thermal",
@@ -286,7 +286,7 @@
     "secundario_valor": {"0": 0.1, "1": 0.2, "2": 0.3, "5": 0.4}
   },
   
-  "S08": {
+  "s08": {
     "machine_id": "s08",
     "gpio_pin": 20,
     "printer_name": "Thermal",
@@ -321,7 +321,7 @@
     "secundario_valor": {"0": 0.1, "1": 0.2, "2": 0.3, "5": 0.4}
   },
     
-  "S09": {
+  "s09": {
     "machine_id": "s09",
     "gpio_pin": 20,
     "printer_name": "Thermal",
@@ -356,7 +356,7 @@
     "secundario_valor": {"0": 0.1, "1": 0.2, "2": 0.3, "5": 0.4}
   },
   
-  "S10": {
+  "s10": {
     "machine_id": "s10",
     "gpio_pin": 20,
     "printer_name": "Thermal",
@@ -391,7 +391,7 @@
     "secundario_valor": {"0": 0.1, "1": 0.2, "2": 0.3, "5": 0.4}
   },
   
-  "S11": {
+  "s11": {
     "machine_id": "s11",
     "gpio_pin": 20,
     "printer_name": "Thermal",
