@@ -1,0 +1,3 @@
+if [ "$(tty)" = "/dev/tty1" ]; then
+    startx /home/pi/etiq/start_etiq.sh -- :0 -nocursor
+fi
