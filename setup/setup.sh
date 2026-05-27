@@ -1,47 +1,71 @@
-sudo apt-get update
-sudo apt install python3 python3-tk python3-xlib cifs-utils -y
-sudo apt-get install python3-openpyxl -y
+#!/bin/bash
+set -e
 
-# X server mínimo para rodar Tkinter no Raspbian Lite
-sudo apt install --no-install-recommends \
+SETUP_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+echo "=================================================="
+echo "  Setup Sistema de Etiquetas"
+echo "  Raspberry Pi Zero 2W + Raspbian Lite + LCD 3.5\""
+echo "=================================================="
+
+# 1. Pacotes
+echo ""
+echo "[1/7] Instalando pacotes..."
+sudo apt-get update -q
+sudo apt-get install -y \
+    git \
+    python3 python3-tk python3-xlib python3-openpyxl \
+    cifs-utils \
     xserver-xorg-core \
     xserver-xorg-video-fbdev \
-    xinit -y
+    xserver-xorg-input-evdev \
+    xinit
 
-# Adiciona pi aos grupos necessários para o X server
+# 2. Grupos necessários para X server e framebuffer
+echo ""
+echo "[2/7] Configurando grupos do usuário pi..."
 sudo usermod -aG tty,video,input,render pi
 
-# Serviço de logs de produção
-sudo mv montar-logs.service /etc/systemd/system/
+# 3. Credencial Samba e ponto de montagem
+echo ""
+echo "[3/7] Configurando Samba..."
+sudo cp "$SETUP_DIR/samba_credencial" /etc/samba_credencial
+sudo chmod 600 /etc/samba_credencial
+sudo mkdir -p /mnt/logs
+sudo chmod +x /home/pi/etiq/montar_logs.sh
+
+# 4. Serviço de montagem de logs via SMB
+echo ""
+echo "[4/7] Habilitando serviço de logs..."
+sudo cp "$SETUP_DIR/montar-logs.service" /etc/systemd/system/
+sudo systemctl daemon-reload
 sudo systemctl enable montar-logs.service
-sudo systemctl start montar-logs.service
 
-# Credencial Samba
-sudo mv samba_credencial /etc/
-
-# LCD: configura X para usar o framebuffer do display (fb1)
+# 5. Xorg para LCD 3.5" (fb1) + touch via evdev
+echo ""
+echo "[5/7] Configurando Xorg para LCD 3.5\"..."
 sudo mkdir -p /etc/X11/xorg.conf.d
-sudo mv 99-lcd.conf /etc/X11/xorg.conf.d/
+sudo cp "$SETUP_DIR/99-lcd.conf" /etc/X11/xorg.conf.d/
+sudo cp "$SETUP_DIR/40-touch.conf" /etc/X11/xorg.conf.d/
+# Garante que startup.service não esteja habilitado (conflita com a abordagem via startx)
+sudo systemctl disable startup.service 2>/dev/null || true
 
-# Auto-login no tty1 como usuário pi
+# 6. Auto-login no tty1 + autostart da aplicação via .bash_profile
+echo ""
+echo "[6/7] Configurando auto-login e autostart..."
 sudo mkdir -p /etc/systemd/system/getty@tty1.service.d
-sudo mv autologin.conf /etc/systemd/system/getty@tty1.service.d/
-
-# Inicia X e a aplicação automaticamente ao logar no tty1
-cp bash_profile /home/pi/.bash_profile
-
-# Script de lançamento da aplicação via startx
-cp start_etiq.sh /home/pi/etiq/start_etiq.sh
+sudo cp "$SETUP_DIR/autologin.conf" /etc/systemd/system/getty@tty1.service.d/
+sudo systemctl daemon-reload
+cp "$SETUP_DIR/bash_profile" /home/pi/.bash_profile
+cp "$SETUP_DIR/start_etiq.sh" /home/pi/etiq/start_etiq.sh
 chmod +x /home/pi/etiq/start_etiq.sh
 
-sudo mkdir -p /mnt/logs
-sudo mount -t cifs //192.168.0.250/Compumate/Producao -o username=compumate,password=TAGCompumate2025*
-
-# Instala driver do LCD 3.5"
-sudo rm -rf LCD-show
-git clone https://github.com/goodtft/LCD-show.git
-chmod -R 755 LCD-show
-cd LCD-show && sudo ./LCD35-show
-
-echo "
-Dependências instaladas..."
+# 7. Driver do LCD 3.5" — reinicia o Pi ao concluir
+echo ""
+echo "[7/7] Instalando driver do LCD 3.5\" (o Pi vai reiniciar)..."
+if [ ! -d "$SETUP_DIR/LCD-show" ]; then
+    git clone https://github.com/goodtft/LCD-show.git "$SETUP_DIR/LCD-show"
+fi
+chmod -R 755 "$SETUP_DIR/LCD-show"
+cd "$SETUP_DIR/LCD-show" && sudo ./LCD35-show
+# LCD35-show reinicia o Pi automaticamente — nada abaixo desta linha é executado
