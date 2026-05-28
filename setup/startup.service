@@ -1,37 +1,15 @@
 [Unit]
-Description=Sistema de Etiquetas - Controle de Producao
-After=multi-user.target network.target
+Description=Sistema de Etiquetas - LCD
+After=multi-user.target
+Wants=multi-user.target
 
 [Service]
 Type=simple
-User=pi
-Group=pi
-WorkingDirectory=/home/pi/etiq
-
-# Variáveis de ambiente para GUI
-Environment=DISPLAY=:0
-Environment=XAUTHORITY=/home/pi/.Xauthority
-Environment=XDG_RUNTIME_DIR=/run/user/1000
-
-# IMPORTANTE: Define qual máquina é (opcional se hostname estiver correto)
-# Environment=MACHINE_ID=S06
-
-# Adiciona o diretório ao PYTHONPATH
-Environment=PYTHONPATH=/home/pi/etiq
-
-# Comando de execução
-ExecStart=/usr/bin/python3 /home/pi/etiq/main.py
-
-# Logs (append mantém histórico)
+ExecStart=/home/pi/etiq/start_etiq.sh
 StandardOutput=append:/home/pi/etiq/log.txt
 StandardError=append:/home/pi/etiq/log.txt
-
-# Restart automático se falhar
 Restart=on-failure
 RestartSec=10
 
-# Timeout para inicialização
-TimeoutStartSec=30
-
 [Install]
-WantedBy=graphical.target
+WantedBy=multi-user.target

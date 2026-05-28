@@ -24,7 +24,7 @@ sudo apt-get install -y \
 # 2. Grupos necessários para X server e framebuffer
 echo ""
 echo "[2/7] Configurando grupos do usuário pi..."
-sudo usermod -aG tty,video,input,render pi
+sudo usermod -aG tty,video,input,render pi 2>/dev/null || true
 
 # 3. Credencial Samba e ponto de montagem
 echo ""
@@ -32,7 +32,7 @@ echo "[3/7] Configurando Samba..."
 sudo cp "$SETUP_DIR/samba_credencial" /etc/samba_credencial
 sudo chmod 600 /etc/samba_credencial
 sudo mkdir -p /mnt/logs
-sudo chmod +x /home/pi/etiq/montar_logs.sh
+sudo chmod +x /home/pi/etiq/montar_logs.sh 2>/dev/null || true
 
 # 4. Serviço de montagem de logs via SMB
 echo ""
@@ -47,18 +47,18 @@ echo "[5/7] Configurando Xorg para LCD 3.5\"..."
 sudo mkdir -p /etc/X11/xorg.conf.d
 sudo cp "$SETUP_DIR/99-lcd.conf" /etc/X11/xorg.conf.d/
 sudo cp "$SETUP_DIR/40-touch.conf" /etc/X11/xorg.conf.d/
-# Garante que startup.service não esteja habilitado (conflita com a abordagem via startx)
-sudo systemctl disable startup.service 2>/dev/null || true
 
-# 6. Auto-login no tty1 + autostart da aplicação via .bash_profile
+# 6. Serviço de startup — inicia Xorg + app direto, sem depender de login
 echo ""
-echo "[6/7] Configurando auto-login e autostart..."
-sudo mkdir -p /etc/systemd/system/getty@tty1.service.d
-sudo cp "$SETUP_DIR/autologin.conf" /etc/systemd/system/getty@tty1.service.d/
-sudo systemctl daemon-reload
-cp "$SETUP_DIR/bash_profile" /home/pi/.bash_profile
+echo "[6/7] Configurando serviço de startup..."
 cp "$SETUP_DIR/start_etiq.sh" /home/pi/etiq/start_etiq.sh
 chmod +x /home/pi/etiq/start_etiq.sh
+sudo cp "$SETUP_DIR/startup.service" /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable startup.service
+# Remove override de autologin se existir (não é mais necessário)
+sudo rm -f /etc/systemd/system/getty@tty1.service.d/autologin.conf
+sudo systemctl daemon-reload
 
 # 7. Driver do LCD 3.5" — reinicia o Pi ao concluir
 echo ""
