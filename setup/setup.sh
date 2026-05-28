@@ -17,8 +17,8 @@ sudo apt-get install -y \
     python3 python3-tk python3-xlib python3-openpyxl \
     cifs-utils \
     xserver-xorg-core \
+    xserver-xorg-input-all \
     xserver-xorg-video-fbdev \
-    xserver-xorg-input-evdev \
     xinit
 
 # 2. Grupos necessários para X server e framebuffer
