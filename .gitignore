@@ -1,3 +1,7 @@
 # Ignorar arquivos temporários do Python
 __pycache__/
 *.pyc
+
+# Banco SQLite local (gerado em tempo de execução, específico por máquina)
+producao.db
+test_producao.db

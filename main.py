@@ -16,7 +16,7 @@ from core.sku_mapper import SKUMapper
 from core.calculator import OutputCalculator
 from hardware.printer import LabelPrinter
 from hardware.gpio_handler import GPIOHandler
-from data.logger import ProductionLogger
+from data.sqlite_logger import SQLiteProductionLogger as ProductionLogger
 from ui.main_window import MainWindow
 
 

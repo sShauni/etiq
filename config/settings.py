@@ -46,12 +46,14 @@ class Settings:
             except Exception:
                 machine_id = None
         
-        # Tenta carregar config específica, senão usa default
+        # Carrega default como base e sobrescreve com o bloco da máquina
+        base = all_configs.get('default', {})
+
         if machine_id and machine_id in all_configs:
-            self._config = all_configs[machine_id]
+            self._config = {**base, **all_configs[machine_id]}
             print(f"✓ Configuração carregada para máquina: {machine_id}")
         else:
-            self._config = all_configs.get('default', {})
+            self._config = base
             print(f"⚠ Usando configuração padrão (máquina: {machine_id or 'desconhecida'})")
     
     def get(self, key: str, default: Any = None) -> Any:
@@ -101,6 +103,31 @@ class Settings:
     def log_dir(self) -> str:
         """Diretório para salvar logs Excel."""
         return self.get('log_dir', '/mnt/logs')
+
+    @property
+    def db_path(self) -> str:
+        """Caminho do banco SQLite local de produção."""
+        return self.get_path('db_path') or '/var/local/etiq/producao.db'
+
+    @property
+    def pg_host(self) -> str:
+        return self.get('pg_host', 'localhost')
+
+    @property
+    def pg_port(self) -> int:
+        return int(self.get('pg_port', 5432))
+
+    @property
+    def pg_dbname(self) -> str:
+        return self.get('pg_dbname', 'producao')
+
+    @property
+    def pg_user(self) -> str:
+        return self.get('pg_user', 'pi')
+
+    @property
+    def pg_password(self) -> str:
+        return self.get('pg_password', '')
     
     @property
     def sku_file_path(self) -> str:
