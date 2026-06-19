@@ -19,6 +19,9 @@ python db/test_sync.py
 
 # Rodar sincronização contínua em paralelo ao app (Pi)
 python data/sync.py
+
+# Iniciar API REST (rodar no servidor onde está o PostgreSQL)
+python -m uvicorn api.main:app --host 0.0.0.0 --port 8000
 ```
 
 ## Arquitetura
@@ -31,9 +34,11 @@ O sistema coleta produção de máquinas de chão de fábrica (Raspberry Pi Zero
                                SQLiteProductionLogger
                                (producao.db — offline-first)
                                         ↓ sync.py (loop paralelo)
-                               PostgreSQL central
-                                        ↓ (próxima etapa)
-                               FastAPI REST ← ERP (MS SQL Server, pull)
+                               PostgreSQL central (192.168.0.250:5432)
+                                        ↓
+                               FastAPI REST (api/main.py — porta 8000)
+                                        ↑ pull periódico
+                               ERP (MS SQL Server)
 ```
 
 ### Configuração por máquina
@@ -71,12 +76,16 @@ contagem: id, ciclo_uid (UNIQUE), maquina, sku, qtd, data_hora (TIMESTAMP), sinc
 O servidor não precisa de nenhuma alteração ao adicionar máquinas novas. Todas as máquinas usam o mesmo usuário PostgreSQL definido no bloco `"default"` de `machine_config.json`, herdado via merge para todos os blocos de máquina. O campo `maquina` nos registros diferencia a origem dos dados.
 
 ```sql
--- Rodar como superuser (postgres) uma única vez:
+-- Rodar como superuser (postgres) no banco producao:
 CREATE DATABASE producao;
-CREATE USER alan WITH PASSWORD 'senha';
-GRANT ALL PRIVILEGES ON DATABASE producao TO alan;
--- PostgreSQL 15+: conceder permissão no schema public
-GRANT ALL ON SCHEMA public TO alan;
+CREATE USER producao_pi WITH PASSWORD 'senha';
+GRANT ALL PRIVILEGES ON DATABASE producao TO producao_pi;
+
+-- PostgreSQL 15+: obrigatório conceder no schema public também.
+-- ATENÇÃO: conectar no banco producao antes (\c producao), senão o grant
+-- vai para o schema public do banco postgres (errado).
+\c producao
+GRANT USAGE, CREATE ON SCHEMA public TO producao_pi;
 ```
 
 Em seguida criar a tabela:
@@ -94,6 +103,26 @@ O bloco `"default"` em `machine_config.json` tem `test_mode: true`, `db_path: "p
 
 Para inspecionar o banco após uso: abrir `producao.db` no [DB Browser for SQLite](https://sqlitebrowser.org/) → aba "Navegar Dados".
 
+### UnicodeDecodeError no Windows com psycopg2
+
+O PostgreSQL instalado localmente usa `Locale = Portuguese_Brazil.1252`. Quando uma conexão falha, o libpq gera a mensagem de erro em português (cp1252). O psycopg2 tenta decodificar como UTF-8 e lança `UnicodeDecodeError` antes do `OperationalError` esperado.
+
+**Fix aplicado em `db/test_sync.py` e `data/sync.py`:**
+```python
+os.environ.setdefault('LANG', 'C')          # força mensagens libpq em ASCII
+sys.stdout.reconfigure(encoding='utf-8')    # necessário pois LANG=C muda o encoding padrão do Python no Windows
+```
+
+### API REST (desenvolvimento local)
+
+```bash
+pip install fastapi uvicorn
+python -m uvicorn api.main:app --host 0.0.0.0 --port 8000
+# Documentação interativa: http://localhost:8000/docs
+```
+
+`api/main.py` é autocontido — não depende de `config/settings.py`. Configuração via variáveis de ambiente: `PG_HOST`, `PG_PORT`, `PG_DBNAME`, `PG_USER`, `PG_PASSWORD`.
+
 ## Estado da migração
 
 | Camada | Status |
@@ -101,7 +130,7 @@ Para inspecionar o banco após uso: abrir `producao.db` no [DB Browser for SQLit
 | SQLite local (`data/sqlite_logger.py`) | Implementado |
 | Sync TCP com PostgreSQL (`data/sync.py`) | Implementado |
 | Schema PostgreSQL (`db/schema.sql`, `db/setup_postgres.py`) | Implementado |
-| API REST FastAPI | Próxima etapa |
-| Integração ERP | Aguarda definição do fornecedor |
+| API REST FastAPI (`api/main.py`) | Implementado |
+| Integração ERP | Aguarda definição do fornecedor (ERP usa MS SQL Server) |
 
 `data/samba_client.py` e `data/logger.py` (CSV) são legados — não são usados no novo fluxo.

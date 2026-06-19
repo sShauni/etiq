@@ -8,7 +8,7 @@
     "log_dir": "/mnt/logs",
     "log_extension": ".csv",
     "db_path": "producao.db",
-    "pg_host": "localhost",
+    "pg_host": "192.168.0.250",
     "pg_port": 5432,
     "pg_dbname": "producao",
     "pg_user": "producao_pi",

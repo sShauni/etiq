@@ -9,6 +9,17 @@ Uso:
 import sys
 import os
 
+# No Windows com PostgreSQL instalado em locale Portuguese_Brazil.1252, o libpq gera
+# mensagens de erro em português encodadas em cp1252. O psycopg2 tenta decodificar como
+# UTF-8 e lança UnicodeDecodeError antes de chegar no OperationalError esperado.
+# LANG=C força o libpq a usar mensagens em ASCII (inglês, sem acentos).
+# stdout.reconfigure é necessário porque LANG=C altera o encoding padrão do Python no Windows.
+os.environ.setdefault('LANG', 'C')
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+if hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import psycopg2
@@ -19,7 +30,7 @@ from data.sync import sync_once
 
 
 def test_connection() -> bool:
-    print(f"\n1. Testando conexão com PostgreSQL...")
+    print(f"\n1. Testando conexao com PostgreSQL...")
     print(f"   Host:   {settings.pg_host}:{settings.pg_port}")
     print(f"   Banco:  {settings.pg_dbname}")
     print(f"   Usuário: {settings.pg_user}")
@@ -31,6 +42,9 @@ def test_connection() -> bool:
             dbname=settings.pg_dbname,
             user=settings.pg_user,
             password=settings.pg_password,
+            sslmode="disable",
+            client_encoding="UTF8",
+            application_name="etiq_sync",
             connect_timeout=10,
         )
 

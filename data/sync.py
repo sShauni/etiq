@@ -4,9 +4,19 @@ Executa em loop contínuo; envia apenas eventos ainda não sincronizados.
 Idempotente: INSERT ... ON CONFLICT DO NOTHING (ciclo_uid UNIQUE no Postgres).
 """
 
+import os
+import sys
 import time
 import logging
 from pathlib import Path
+
+# No Windows com PostgreSQL em locale Portuguese_Brazil.1252, o libpq gera mensagens
+# de erro em cp1252. LANG=C força mensagens em ASCII para evitar UnicodeDecodeError.
+os.environ.setdefault('LANG', 'C')
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+if hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
 
 import psycopg2
 
