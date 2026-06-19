@@ -23,11 +23,15 @@ CREATE TABLE IF NOT EXISTS contagem (
     maquina     TEXT                        NOT NULL,
     sku         TEXT                        NOT NULL,
     qtd         INTEGER                     NOT NULL,
-    data_hora   TIMESTAMP WITHOUT TIME ZONE NOT NULL
+    data_hora   TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    operador    INTEGER
 );
+
+ALTER TABLE contagem ADD COLUMN IF NOT EXISTS operador INTEGER;
 
 CREATE INDEX IF NOT EXISTS idx_contagem_data_hora ON contagem (data_hora);
 CREATE INDEX IF NOT EXISTS idx_contagem_maquina   ON contagem (maquina);
+CREATE INDEX IF NOT EXISTS idx_contagem_operador  ON contagem (operador);
 """
 
 

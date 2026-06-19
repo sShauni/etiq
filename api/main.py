@@ -19,6 +19,7 @@ os.environ.setdefault('LANG', 'C')
 import psycopg2
 import psycopg2.extras
 from fastapi import FastAPI, Query
+from typing import Optional
 
 PG_HOST     = os.getenv('PG_HOST',     'localhost')
 PG_PORT     = int(os.getenv('PG_PORT', '5432'))
@@ -48,24 +49,46 @@ def _pg_connect():
 def get_producao(
     since_id: int = Query(0, description="Retorna apenas registros com id maior que este valor"),
     limit: int = Query(1000, le=5000, description="Máximo de registros por chamada"),
+    operador: Optional[int] = Query(None, description="Filtra por chave do cartão do operador"),
+    data_de: Optional[str] = Query(None, description="Início do período (ISO 8601: 2026-06-19T06:00:00)"),
+    data_ate: Optional[str] = Query(None, description="Fim do período (ISO 8601: 2026-06-19T14:00:00)"),
 ):
     """
     Retorna registros de produção novos desde o último pull.
 
     O ERP deve armazenar o maior `id` recebido e passá-lo como `since_id`
     na próxima chamada. Repetir até a lista retornar vazia.
+
+    Filtros opcionais: operador (chave do cartão), data_de e data_ate (para consultas por turno).
     """
+    filters = ["id > %(since_id)s"]
+    params: dict = {"since_id": since_id, "limit": limit}
+
+    if operador is not None:
+        filters.append("operador = %(operador)s")
+        params["operador"] = operador
+
+    if data_de is not None:
+        filters.append("data_hora >= %(data_de)s")
+        params["data_de"] = data_de
+
+    if data_ate is not None:
+        filters.append("data_hora <= %(data_ate)s")
+        params["data_ate"] = data_ate
+
+    where = " AND ".join(filters)
+
     with _pg_connect() as conn:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             cur.execute(
-                """
-                SELECT id, ciclo_uid, maquina, sku, qtd, data_hora
+                f"""
+                SELECT id, ciclo_uid, maquina, sku, qtd, data_hora, operador
                 FROM contagem
-                WHERE id > %s
+                WHERE {where}
                 ORDER BY id ASC
-                LIMIT %s
+                LIMIT %(limit)s
                 """,
-                (since_id, limit),
+                params,
             )
             rows = cur.fetchall()
 

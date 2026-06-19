@@ -32,8 +32,8 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 INSERT_SQL = """
-    INSERT INTO contagem (ciclo_uid, maquina, sku, qtd, data_hora)
-    VALUES (%(ciclo_uid)s, %(maquina)s, %(sku)s, %(qtd)s, %(data_hora)s)
+    INSERT INTO contagem (ciclo_uid, maquina, sku, qtd, data_hora, operador)
+    VALUES (%(ciclo_uid)s, %(maquina)s, %(sku)s, %(qtd)s, %(data_hora)s, %(operador)s)
     ON CONFLICT (ciclo_uid) DO NOTHING
 """
 

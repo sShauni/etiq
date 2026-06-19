@@ -43,9 +43,14 @@ class SQLiteProductionLogger:
                     sku         TEXT    NOT NULL,
                     qtd         INTEGER NOT NULL,
                     data_hora   TIMESTAMP NOT NULL,
+                    operador    INTEGER,
                     sincronizado INTEGER NOT NULL DEFAULT 0
                 )
             """)
+            # migração: adiciona coluna em bancos já existentes
+            cols = {row[1] for row in conn.execute("PRAGMA table_info(contagem)")}
+            if "operador" not in cols:
+                conn.execute("ALTER TABLE contagem ADD COLUMN operador INTEGER")
             conn.execute(
                 "CREATE INDEX IF NOT EXISTS idx_data_hora    ON contagem (data_hora)"
             )
@@ -60,7 +65,12 @@ class SQLiteProductionLogger:
     # Interface pública (compatível com ProductionLogger)
     # ------------------------------------------------------------------
 
-    def log_production(self, codigo: float, automatica: bool = False) -> bool:
+    def log_production(
+        self,
+        codigo: float,
+        automatica: bool = False,
+        operador: int | None = None,
+    ) -> bool:
         """Registra um ciclo de produção como evento novo."""
         sku = self.sku_mapper.get_sku(codigo)
         if not sku:
@@ -74,9 +84,9 @@ class SQLiteProductionLogger:
             with self._conn() as conn:
                 conn.execute(
                     """INSERT OR IGNORE INTO contagem
-                       (ciclo_uid, maquina, sku, qtd, data_hora)
-                       VALUES (?, ?, ?, ?, ?)""",
-                    (ciclo_uid, self.machine_id, sku, 1, data_hora),
+                       (ciclo_uid, maquina, sku, qtd, data_hora, operador)
+                       VALUES (?, ?, ?, ?, ?, ?)""",
+                    (ciclo_uid, self.machine_id, sku, 1, data_hora, operador),
                 )
             modo = "automática" if automatica else "manual"
             print(f"✓ Produção registrada ({modo}): SKU {sku}")
@@ -85,9 +95,14 @@ class SQLiteProductionLogger:
             print(f"✗ Erro ao registrar produção: {e}")
             return False
 
-    def log_multiple_productions(self, codigos: list, automatica: bool = False) -> int:
+    def log_multiple_productions(
+        self,
+        codigos: list,
+        automatica: bool = False,
+        operador: int | None = None,
+    ) -> int:
         """Registra múltiplos ciclos; retorna quantos foram gravados com sucesso."""
-        return sum(1 for c in codigos if self.log_production(c, automatica))
+        return sum(1 for c in codigos if self.log_production(c, automatica, operador))
 
     def get_today_summary(self) -> Dict[str, int]:
         """Retorna {sku: total_do_dia} para a máquina atual."""
@@ -114,12 +129,12 @@ class SQLiteProductionLogger:
         """Retorna eventos ainda não enviados ao Postgres central."""
         with self._conn() as conn:
             rows = conn.execute(
-                """SELECT id, ciclo_uid, maquina, sku, qtd, data_hora
+                """SELECT id, ciclo_uid, maquina, sku, qtd, data_hora, operador
                    FROM contagem
                    WHERE sincronizado = 0
                    ORDER BY id""",
             ).fetchall()
-        cols = ("id", "ciclo_uid", "maquina", "sku", "qtd", "data_hora")
+        cols = ("id", "ciclo_uid", "maquina", "sku", "qtd", "data_hora", "operador")
         return [dict(zip(cols, r)) for r in rows]
 
     def mark_synced(self, ids: List[int]) -> None:
